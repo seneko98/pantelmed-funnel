@@ -1,1 +1,0 @@
-# pantelmed-funnel
