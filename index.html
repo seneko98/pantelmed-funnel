@@ -1,16 +1,230 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>PantelMed - Тест</title>
-  <link rel="stylesheet" href="style.css">
+    <title>PantelMed - Розширений доступ</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>🧠 PantelMed AI</h1>
-    <p><b>Питання:</b> Як ти зараз почуваєшся?</p>
-    <button onclick="window.location.href='answer.html'">Подивитись відповідь</button>
-  </div>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 PantelMed</h1>
+            <p>Розширений доступ до медичних рекомендацій</p>
+        </div>
+        
+        <div class="content">
+            <div class="user-info">
+                <strong>🆔 Ваш ID:</strong> <span class="user-id" id="userIdDisplay">Генерується...</span>
+                <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                    Цей ID збережений у вашому браузері для ідентифікації платежів
+                </div>
+            </div>
+            
+            <div id="statusCard" class="status-card">
+                <div id="statusContent">🔍 Перевіряємо ваш статус...</div>
+            </div>
+            
+            <div id="paymentSection" style="display: none;">
+                <div class="payment-section">
+                    <h3>💳 Оплата підписки</h3>
+                    
+                    <div class="amount-highlight">
+                        <div>Сума до оплати:</div>
+                        <div class="amount">0.5 USDT</div>
+                        <div>TRC-20 Network</div>
+                    </div>
+                    
+                    <div>
+                        <strong>💰 Адреса для оплати:</strong>
+                        <div class="wallet-address">
+                            TQeHa8VdwfyybxtioW4ggbnDC1rbWe8nFa
+                            <button class="copy-btn" onclick="copyWallet()">📋</button>
+                        </div>
+                    </div>
+                    
+                    <div class="steps">
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div>Скопіюйте адресу гаманця вище</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div>Надішліть 0.5 USDT (TRC-20) на цю адресу</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div>Натисніть "Я оплатив" після відправки</div>
+                        </div>
+                    </div>
+                    
+                    <button id="checkPaymentBtn" class="btn-primary" onclick="checkPayment()">
+                        ✅ Я оплатив
+                    </button>
+                </div>
+            </div>
+            
+            <div id="premiumContent" class="premium-content">
+                <h3>🎉 Доступ відкрито!</h3>
+                <div id="subscriptionInfo" class="subscription-info"></div>
+                <ul>
+                    <li>📄 <strong>Стек добавок:</strong> Цинк, Магній, Омега-3, Вітамін D3</li>
+                    <li>🧪 <strong>Список аналізів:</strong> Тестостерон, TSH, Вітамін D, B12</li>
+                    <li>🎥 <strong>Відео матеріали:</strong> Інтерпретація результатів</li>
+                    <li>🧠 <strong>AI Інтерпретатор:</strong> Аналіз ваших результатів</li>
+                </ul>
+                
+                <button onclick="downloadContent()" class="btn-primary">
+                    📥 Завантажити матеріали
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Base URL - використовуємо той самий домен
+        const API_BASE = window.location.origin;
+
+        // Функція генерації унікального ID
+        function generateUserId() {
+            return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Отримання або створення User ID
+        function getUserId() {
+            let userId = localStorage.getItem('pantelmed_user_id');
+            if (!userId) {
+                userId = generateUserId();
+                localStorage.setItem('pantelmed_user_id', userId);
+                console.log('Створено новий User ID:', userId);
+            }
+            return userId;
+        }
+
+        // Ініціалізація
+        const userId = getUserId();
+        document.getElementById('userIdDisplay').textContent = userId;
+
+        // Елементи DOM
+        const statusCard = document.getElementById('statusCard');
+        const statusContent = document.getElementById('statusContent');
+        const paymentSection = document.getElementById('paymentSection');
+        const premiumContent = document.getElementById('premiumContent');
+        const checkPaymentBtn = document.getElementById('checkPaymentBtn');
+        const subscriptionInfo = document.getElementById('subscriptionInfo');
+
+        // Функція показу статусу
+        function showStatus(message, type = 'info') {
+            statusCard.className = `status-card ${type}`;
+            statusContent.innerHTML = message;
+        }
+
+        // Копіювання адреси гаманця
+        function copyWallet() {
+            const walletAddress = "TQeHa8VdwfyybxtioW4ggbnDC1rbWe8nFa";
+            navigator.clipboard.writeText(walletAddress).then(() => {
+                showStatus("📋 Адресу гаманця скопійовано!", "success");
+                setTimeout(() => checkSubscriptionStatus(), 2000);
+            }).catch(() => {
+                alert("❌ Не вдалося скопіювати адресу");
+            });
+        }
+
+        // Функція перевірки статусу підписки
+        async function checkSubscriptionStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/subscription-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ user_id: userId })
+                });
+
+                const data = await response.json();
+
+                if (data.has_subscription && data.active) {
+                    // Активна підписка
+                    showStatus("✅ У вас є активна підписка!", 'success');
+                    subscriptionInfo.innerHTML = `
+                        <strong>📅 Активна до:</strong> ${new Date(data.expires_at).toLocaleDateString('uk-UA')}<br>
+                        <strong>⏰ Залишилось:</strong> ${data.days_left} днів
+                    `;
+                    premiumContent.classList.add('show');
+                    paymentSection.style.display = 'none';
+                } else {
+                    // Потрібна оплата
+                    showStatus("🔒 Для доступу до преміум функцій потрібна підписка", 'warning');
+                    paymentSection.style.display = 'block';
+                    premiumContent.classList.remove('show');
+                }
+            } catch (error) {
+                console.error('Error checking subscription:', error);
+                showStatus("⚠️ Помилка з'єднання з сервером. Показуємо форму оплати.", 'error');
+                paymentSection.style.display = 'block';
+            }
+        }
+
+        // Функція перевірки платежу
+        async function checkPayment() {
+            checkPaymentBtn.disabled = true;
+            checkPaymentBtn.innerHTML = '<span class="loading"></span> Перевіряємо платіж...';
+
+            try {
+                const response = await fetch(`${API_BASE}/check-payment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ user_id: userId })
+                });
+
+                const data = await response.json();
+
+                if (data.access === "granted") {
+                    showStatus("🎉 Платіж знайдено! Підписка активована", 'success');
+                    
+                    if (data.subscription) {
+                        subscriptionInfo.innerHTML = `
+                            <strong>📅 Активна до:</strong> ${new Date(data.subscription.expires_at).toLocaleDateString('uk-UA')}<br>
+                            <strong>⏰ Залишилось:</strong> ${data.subscription.days_left} днів<br>
+                            <strong>💰 Сума платежу:</strong> ${data.transaction?.amount || '0.5'} USDT
+                        `;
+                    }
+                    
+                    premiumContent.classList.add('show');
+                    paymentSection.style.display = 'none';
+                } else {
+                    showStatus(`❌ ${data.message || 'Платіж не знайдений. Спробуйте через кілька хвилин.'}`, 'warning');
+                    checkPaymentBtn.disabled = false;
+                    checkPaymentBtn.innerHTML = "✅ Я оплатив";
+                }
+            } catch (error) {
+                console.error('Payment check error:', error);
+                showStatus("⚠️ Помилка при перевірці платежу", 'error');
+                checkPaymentBtn.disabled = false;
+                checkPaymentBtn.innerHTML = "✅ Я оплатив";
+            }
+        }
+
+        // Функція завантаження контенту (заглушка)
+        function downloadContent() {
+            alert("🚀 Функція завантаження буде додана в наступному оновленні!");
+        }
+
+        // Автоматична перевірка статусу при завантаженні
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('PantelMed ініціалізовано з User ID:', userId);
+            checkSubscriptionStatus();
+        });
+
+        // Періодична перевірка кожні 30 секунд (якщо сторінка активна)
+        setInterval(() => {
+            if (document.visibilityState === 'visible' && paymentSection.style.display !== 'none') {
+                console.log('Автоматична перевірка статусу...');
+                checkSubscriptionStatus();
+            }
+        }, 30000);
+    </script>
 </body>
 </html>
