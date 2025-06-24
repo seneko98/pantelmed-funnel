@@ -1,20 +1,252 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Доступ відкрито</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>PantelMed - Дякуємо за оплату!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h2>🎉 Доступ відкрито</h2>
-    <p>Ось твій персональний план дій:</p>
-    <ul>
-      <li>1. Додатки: магній, тирозин, вітамін D</li>
-      <li>2. Здати аналізи: пролактин, ТТГ, феритин</li>
-      <li>3. Переглянути відео: <a href="#">натисни сюди</a></li>
-    </ul>
-  </div>
+    <div class="container">
+        <div class="header">
+            <div style="font-size: 64px; margin-bottom: 20px; animation: bounce 1s ease-in-out;">🎉</div>
+            <h1>Дякуємо за оплату!</h1>
+            <p>Ваша підписка активована успішно</p>
+        </div>
+        
+        <div class="content">
+            <div class="access-info">
+                <h3>✅ Доступ активовано</h3>
+                <p>Тепер ви маєте повний доступ до всіх преміум функцій PantelMed</p>
+            </div>
+            
+            <div class="user-info">
+                <h3>🆔 Ваш ID</h3>
+                <div class="user-id" id="userIdDisplay">Завантаження...</div>
+                <small style="color: #666; margin-top: 8px; display: block;">
+                    Збережіть цей ID для подальшого доступу до підписки
+                </small>
+            </div>
+            
+            <div id="subscriptionDetails" class="subscription-info">
+                <h3>📅 Деталі підписки</h3>
+                <p id="subscriptionInfo">Завантаження інформації...</p>
+            </div>
+            
+            <div class="countdown" id="countdownSection" style="display: none;">
+                <h3>⏰ Залишилось часу підписки</h3>
+                <div id="countdownDisplay" style="font-size: 18px; font-weight: bold; color: #f57c00; margin-top: 10px;"></div>
+            </div>
+            
+            <div class="features">
+                <h3>🚀 Що тепер доступно:</h3>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">📄</div>
+                    <div class="feature-content">
+                        <h3>Стек добавок</h3>
+                        <p>Повний список рекомендованих вітамінів та мінералів з дозуванням</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">🧪</div>
+                    <div class="feature-content">
+                        <h3>Розширений список аналізів</h3>
+                        <p>Детальний перелік лабораторних досліджень для моніторингу здоров'я</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">🎥</div>
+                    <div class="feature-content">
+                        <h3>Відео матеріали</h3>
+                        <p>Навчальні відео з інтерпретації результатів аналізів</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">🧠</div>
+                    <div class="feature-content">
+                        <h3>AI Інтерпретатор</h3>
+                        <p>Штучний інтелект для аналізу ваших медичних показників</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="next-steps">
+                <h3>📋 Наступні кроки:</h3>
+                
+                <div class="step">
+                    <span class="step-number">1</span>
+                    Поверніться на головну сторінку для доступу до матеріалів
+                </div>
+                
+                <div class="step">
+                    <span class="step-number">2</span>
+                    Користуйтеся всіма преміум функціями протягом 30 днів
+                </div>
+                
+                <div class="step">
+                    <span class="step-number">3</span>
+                    За питаннями звертайтеся до підтримки
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px; text-align: center;">
+                <button onclick="goToMainPage()" class="btn-primary">
+                    🏠 Перейти до матеріалів
+                </button>
+                <a href="mailto:support@pantelmed.com" class="btn btn-secondary" style="margin-top: 10px;">
+                    📧 Підтримка
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Функція для отримання параметрів URL
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            const results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        // Отримання User ID з localStorage
+        function getUserId() {
+            return localStorage.getItem('pantelmed_user_id') || getUrlParameter('user_id') || 'Не знайдено';
+        }
+
+        // Перехід на головну сторінку
+        function goToMainPage() {
+            window.location.href = 'index.html';
+        }
+
+        // Відображення інформації про підписку
+        function displaySubscriptionInfo() {
+            const userId = getUserId();
+            const expiryDate = getUrlParameter('expires_at');
+            const daysLeft = getUrlParameter('days_left');
+            
+            // Показуємо User ID
+            document.getElementById('userIdDisplay').textContent = userId;
+            
+            const subscriptionInfo = document.getElementById('subscriptionInfo');
+            
+            if (expiryDate && daysLeft) {
+                const formattedDate = new Date(expiryDate).toLocaleDateString('uk-UA', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                subscriptionInfo.innerHTML = `
+                    <strong>📅 Активна до:</strong> ${formattedDate}<br>
+                    <strong>⏰ Залишилось:</strong> ${daysLeft} днів<br>
+                    <strong>💰 Тип:</strong> Преміум підписка (30 днів)
+                `;
+                
+                // Показуємо зворотний відлік
+                if (parseInt(daysLeft) > 0) {
+                    document.getElementById('countdownSection').style.display = 'block';
+                    startCountdown(expiryDate);
+                }
+            } else {
+                subscriptionInfo.innerHTML = `
+                    <strong>✅ Статус:</strong> Активна<br>
+                    <strong>⏰ Тривалість:</strong> 30 днів<br>
+                    <strong>💰 Тип:</strong> Преміум підписка<br>
+                    <em style="color: #666;">Точні деталі доступні на головній сторінці</em>
+                `;
+            }
+        }
+
+        // Зворотний відлік до закінчення підписки
+        function startCountdown(expiryDate) {
+            const countdownDisplay = document.getElementById('countdownDisplay');
+            
+            function updateCountdown() {
+                const now = new Date().getTime();
+                const expiry = new Date(expiryDate).getTime();
+                const distance = expiry - now;
+                
+                if (distance > 0) {
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    
+                    countdownDisplay.innerHTML = `${days} днів, ${hours} годин, ${minutes} хвилин`;
+                } else {
+                    countdownDisplay.innerHTML = "Підписка закінчилася";
+                    countdownDisplay.style.color = '#f44336';
+                }
+            }
+            
+            updateCountdown();
+            setInterval(updateCountdown, 60000); // Оновлюємо кожну хвилину
+        }
+
+        // Запуск при завантаженні сторінки
+        document.addEventListener('DOMContentLoaded', () => {
+            displaySubscriptionInfo();
+            
+            // Автоматичне перенаправлення через 10 секунд (опціонально)
+            setTimeout(() => {
+                if (confirm('Бажаєте перейти до матеріалів зараз?')) {
+                    goToMainPage();
+                }
+            }, 10000);
+        });
+
+        // Додаємо стилі для нових елементів
+        const additionalStyles = `
+            .countdown {
+                background: #fff3e0;
+                padding: 15px;
+                border-radius: 8px;
+                margin: 20px 0;
+                border-left: 4px solid #ff9800;
+            }
+            
+            .next-steps {
+                margin-top: 30px;
+                padding-top: 30px;
+                border-top: 2px solid #f0f0f0;
+            }
+            
+            .btn-secondary {
+                background: #2196F3;
+                color: white;
+                padding: 15px 30px;
+                text-decoration: none;
+                border-radius: 10px;
+                display: inline-block;
+                margin: 10px;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-secondary:hover {
+                background: #1976D2;
+                transform: translateY(-2px);
+            }
+            
+            @keyframes bounce {
+                0%, 20%, 50%, 80%, 100% {
+                    transform: translateY(0);
+                }
+                40% {
+                    transform: translateY(-10px);
+                }
+                60% {
+                    transform: translateY(-5px);
+                }
+            }
+        `;
+        
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = additionalStyles;
+        document.head.appendChild(styleSheet);
+    </script>
 </body>
 </html>
