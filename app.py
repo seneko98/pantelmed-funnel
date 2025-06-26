@@ -11,7 +11,7 @@ CORS(app)  # Дозволяємо CORS для фронтенду
 
 # Конфігурація
 TRON_WALLET = "TQeHa8VdwfyybxtioW4ggbnDC1rbWe8nFa"
-MIN_AMOUNT = 0.5
+MIN_AMOUNT = 2.6
 SUBSCRIPTION_DAYS = 30  # Тривалість підписки
 
 # MongoDB підключення
