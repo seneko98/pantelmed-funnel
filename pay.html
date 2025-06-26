@@ -35,7 +35,7 @@
             
             <div class="amount-highlight">
                 <div>Сума до оплати:</div>
-                <div class="amount">0.5 USDT</div>
+                <div class="amount">2.6 USDT</div>
                 <div>TRC-20 Network (Tron)</div>
             </div>
             
@@ -55,7 +55,7 @@
                 </div>
                 <div class="step">
                     <div class="step-number">2</div>
-                    <div>Надішліть рівно 0.5 USDT через TRC-20 мережу</div>
+                    <div>Надішліть рівно 2.6 USDT через TRC-20 мережу</div>
                 </div>
                 <div class="step">
                     <div class="step-number">3</div>
@@ -120,7 +120,7 @@
         function copyWallet() {
             const walletAddress = "TQeHa8VdwfyybxtioW4ggbnDC1rbWe8nFa";
             navigator.clipboard.writeText(walletAddress).then(() => {
-                showStatus("📋 Адресу гаманця скопійовано! Тепер відправте 0.5 USDT на цю адресу.", "success");
+                showStatus("📋 Адресу гаманця скопійовано! Тепер відправте 2.6 USDT на цю адресу.", "success");
             }).catch(() => {
                 // Fallback для старих браузерів
                 const textArea = document.createElement("textarea");
@@ -195,7 +195,7 @@
                     
                     payBtn.innerHTML = "✅ Підписка активована!";
                 } else {
-                    showStatus(data.message || "❌ Платіж не знайдено. Перевірте, чи відправили ви рівно 0.5 USDT на правильну адресу.", "warning");
+                    showStatus(data.message || "❌ Платіж не знайдено. Перевірте, чи відправили ви рівно 2.6 USDT на правильну адресу.", "warning");
                     payBtn.disabled = false;
                     payBtn.innerHTML = "✅ Я оплатив";
                 }
