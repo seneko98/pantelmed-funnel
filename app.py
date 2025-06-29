@@ -16,80 +16,42 @@ MIN_AMOUNT = 2.6
 MIN_AMOUNT_TEST = 0.5  # Для тестового режиму
 SUBSCRIPTION_DAYS = 30  # Тривалість підписки
 
-# MongoDB підключення з SSL параметрами для Render
-MONGO_URI = "mongodb+srv://Vlad:manreds7@cluster0.d0qnz.mongodb.net/pantelmed?retryWrites=true&w=majority&appName=Cluster0&ssl=true&tlsAllowInvalidCertificates=true"
+# MongoDB підключення (КАК У ПРАЦЮЮЧОМУ БОТІ)
+MONGO_URI = "mongodb+srv://Vlad:manreds7@cluster0.d0qnz.mongodb.net/pantelmed?retryWrites=true&w=majority&appName=Cluster0"
 
 def init_mongodb():
-    """Ініціалізація MongoDB з SSL підтримкою для Render"""
+    """Ініціалізація MongoDB (спрощена версія як у боті)"""
     try:
-        print("🔗 Connecting to MongoDB with SSL fix...")
+        print("🔗 Connecting to MongoDB (bot version)...")
         
-        # Створюємо клієнт з SSL налаштуваннями для Render
+        # Спрощене підключення БЕЗ SSL конфліктів
         client = MongoClient(
             MONGO_URI,
-            serverSelectionTimeoutMS=10000,    # Збільшено до 10 секунд
-            connectTimeoutMS=20000,            # Збільшено до 20 секунд
-            socketTimeoutMS=30000,             # Збільшено до 30 секунд
-            ssl=True,                          # Включаємо SSL
-            tlsAllowInvalidCertificates=True,  # Дозволяємо невалідні сертифікати
-            tlsInsecure=True,                  # Менш строга SSL перевірка
-            retryWrites=True,
-            maxPoolSize=10,                    # Обмежуємо pool розмір
-            minPoolSize=1
+            serverSelectionTimeoutMS=10000,
+            connectTimeoutMS=15000,
+            socketTimeoutMS=20000
         )
         
         # Тестуємо підключення
-        print("🔍 Testing MongoDB connection...")
         client.admin.command('ping')
         print("✅ MongoDB connection successful!")
         
         # Отримуємо базу даних
         db = client["pantelmed"]
         
-        # Тестуємо доступ до бази
-        collections = db.list_collection_names()
-        print(f"✅ Database access successful! Collections: {collections}")
-        
-        # Тестуємо операції запису/читання (більш простий тест)
+        # Простий тест доступу
         try:
-            test_collection = db["connection_test"]
-            test_doc = {"test": "connection", "timestamp": datetime.utcnow()}
-            result = test_collection.insert_one(test_doc)
-            print(f"✅ Write test successful: {result.inserted_id}")
-            
-            # Видаляємо тестовий документ
-            test_collection.delete_one({"_id": result.inserted_id})
-            print("✅ Delete test successful")
+            collections = db.list_collection_names()
+            print(f"✅ Database access successful! Collections: {collections}")
         except Exception as e:
-            print(f"⚠️ Write test failed but connection works: {e}")
+            print(f"⚠️ Collection list failed but connection works: {e}")
         
         return client, db
         
     except Exception as e:
         print(f"❌ MongoDB connection failed: {e}")
         print(f"❌ Error type: {type(e).__name__}")
-        
-        # Спробуємо альтернативний connection string
-        try:
-            print("🔄 Trying alternative connection string...")
-            alt_uri = "mongodb+srv://Vlad:manreds7@cluster0.d0qnz.mongodb.net/pantelmed?retryWrites=true&w=majority&ssl=false"
-            
-            alt_client = MongoClient(
-                alt_uri,
-                serverSelectionTimeoutMS=15000,
-                connectTimeoutMS=30000,
-                socketTimeoutMS=40000
-            )
-            
-            alt_client.admin.command('ping')
-            print("✅ Alternative connection successful!")
-            
-            db = alt_client["pantelmed"]
-            return alt_client, db
-            
-        except Exception as alt_e:
-            print(f"❌ Alternative connection also failed: {alt_e}")
-            return None, None
+        return None, None
 
 # Ініціалізація MongoDB
 print("🚀 Initializing MongoDB connection...")
@@ -491,7 +453,7 @@ def health():
     
     return jsonify({
         "status": "ok", 
-        "version": "PANTELMED_PAYMENT_SYSTEM_2024_SSL_FIXED",
+        "version": "PANTELMED_PAYMENT_SYSTEM_2024_MONGODB_WORKING",
         "timestamp": datetime.utcnow().isoformat(),
         "endpoints": ["/health", "/subscription-status", "/check-payment", "/create-payment", "/debug-tron"],
         "mongodb": {
