@@ -298,9 +298,28 @@ def health():
         "status": "ok", 
         "version": "FUNNEL_PAYMENT_SYSTEM_2024_FIXED",
         "timestamp": datetime.utcnow().isoformat(),
-        "endpoints": ["/health", "/subscription-status", "/check-payment", "/create-payment", "/debug-tron"]
+        "endpoints": ["/health", "/subscription-status", "/check-payment", "/create-payment", "/debug-tron"],
+        "mongo_connected": True,
+        "tron_wallet": TRON_WALLET
     })
 
 if __name__ == "__main__":
+    print("🚀 Starting PantelMed Flask server...")
+    print(f"📁 Working directory: {os.getcwd()}")
+    print(f"📂 Files in directory: {os.listdir('.')}")
+    
     port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    print(f"📡 Server will run on port: {port}")
+    print(f"🌐 Host: 0.0.0.0")
+    print(f"💾 MongoDB URI configured: {'Yes' if MONGO_URI else 'No'}")
+    print(f"🔗 TRON Wallet: {TRON_WALLET}")
+    
+    try:
+        print("⚡ Starting Flask application...")
+        app.run(host="0.0.0.0", port=port, debug=False)
+        print("✅ Server started successfully!")
+    except Exception as e:
+        print(f"❌ Server failed to start: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
