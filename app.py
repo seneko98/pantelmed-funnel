@@ -20,37 +20,35 @@ SUBSCRIPTION_DAYS = 30  # Тривалість підписки
 MONGO_URI = "mongodb+srv://Vlad:manreds7@cluster0.d0qnz.mongodb.net/pantelmed?retryWrites=true&w=majority&appName=Cluster0"
 
 def init_mongodb():
-    """Ініціалізація MongoDB (спрощена версія як у боті)"""
+    """Максимально спрощене підключення до MongoDB"""
     try:
-        print("🔗 Connecting to MongoDB (bot version)...")
+        print("🔗 Trying simplified MongoDB connection...")
         
-        # Спрощене підключення БЕЗ SSL конфліктів
-        client = MongoClient(
-            MONGO_URI,
-            serverSelectionTimeoutMS=10000,
-            connectTimeoutMS=15000,
-            socketTimeoutMS=20000
-        )
+        # Максимально спрощений connection string
+        simple_uri = "mongodb+srv://Vlad:manreds7@cluster0.d0qnz.mongodb.net/?retryWrites=true&w=majority"
         
-        # Тестуємо підключення
-        client.admin.command('ping')
+        # Мінімальний client з великими таймаутами
+        client = MongoClient(simple_uri, serverSelectionTimeoutMS=30000)
+        
+        # Швидкий тест
+        client.server_info()
         print("✅ MongoDB connection successful!")
         
-        # Отримуємо базу даних
-        db = client["pantelmed"]
+        # Використовуємо базу pantelmed
+        db = client.pantelmed
         
-        # Простий тест доступу
+        # Простий тест запису
         try:
-            collections = db.list_collection_names()
-            print(f"✅ Database access successful! Collections: {collections}")
-        except Exception as e:
-            print(f"⚠️ Collection list failed but connection works: {e}")
-        
+            test_result = db.test.insert_one({"test": "render_connection"})
+            db.test.delete_one({"_id": test_result.inserted_id})
+            print("✅ Database write test successful!")
+        except:
+            print("⚠️ Write test failed but connection established")
+            
         return client, db
         
     except Exception as e:
-        print(f"❌ MongoDB connection failed: {e}")
-        print(f"❌ Error type: {type(e).__name__}")
+        print(f"❌ Simplified connection failed: {e}")
         return None, None
 
 # Ініціалізація MongoDB
