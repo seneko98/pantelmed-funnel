@@ -12,6 +12,7 @@ CORS(app)  # Дозволяємо CORS для фронтенду
 # Конфігурація
 TRON_WALLET = "TQeHa8VdwfyybxtioW4ggbnDC1rbWe8nFa"
 MIN_AMOUNT = 2.6
+MIN_AMOUNT_TEST = 0.5  # Для тестового режиму
 SUBSCRIPTION_DAYS = 30  # Тривалість підписки
 
 # MongoDB підключення
@@ -39,15 +40,64 @@ def serve_static(filename):
     """Віддаємо статичні файли (HTML, CSS)"""
     return send_from_directory('.', filename)
 
+# Debug endpoint
+@app.route("/debug-tron", methods=["GET"])
+def debug_tron():
+    """Debug endpoint для перевірки TRON API"""
+    try:
+        url = f"https://api.trongrid.io/v1/accounts/{TRON_WALLET}/transactions/trc20?limit=5"
+        headers = {"accept": "application/json"}
+        
+        response = requests.get(url, headers=headers, timeout=15)
+        response.raise_for_status()
+        data = response.json()
+        
+        # Форматуємо транзакції для читабельності
+        formatted_transactions = []
+        recent_time = datetime.utcnow() - timedelta(minutes=60)
+        
+        for tx in data.get("data", []):
+            amount = int(tx.get("value", "0")) / (10 ** 6)
+            timestamp = datetime.fromtimestamp(tx["block_timestamp"] / 1000)
+            is_recent = timestamp > recent_time
+            formatted_transactions.append({
+                "amount": amount,
+                "timestamp": timestamp.isoformat(),
+                "tx_id": tx.get("transaction_id", "")[:16] + "...",
+                "is_recent": is_recent,
+                "matches_criteria": amount >= MIN_AMOUNT and is_recent
+            })
+        
+        return jsonify({
+            "status": "ok",
+            "wallet": TRON_WALLET,
+            "transactions_count": len(formatted_transactions),
+            "transactions": formatted_transactions,
+            "min_amount_required": MIN_AMOUNT,
+            "min_amount_test": MIN_AMOUNT_TEST,
+            "search_from": recent_time.isoformat()
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "wallet": TRON_WALLET
+        }), 500
+
 # API endpoints
 @app.route("/create-payment", methods=["POST"])
 def create_payment():
     """Створюємо запит на оплату для користувача"""
     data = request.get_json()
     user_id = data.get("user_id")
+    test_mode = data.get("test_mode", False)
     
     if not user_id:
         return jsonify({"error": "user_id обов'язковий"}), 400
+    
+    # Визначаємо мінімальну суму
+    min_amount = MIN_AMOUNT_TEST if test_mode else MIN_AMOUNT
     
     # Створюємо унікальний payment_id для цього користувача
     payment_id = generate_payment_id(user_id)
@@ -56,10 +106,11 @@ def create_payment():
     user_data = {
         "user_id": user_id,                    # Браузерний ID (web_timestamp_hash)
         "payment_id": payment_id,              # Унікальний ID платежу
-        "amount_expected": MIN_AMOUNT,         # Очікувана сума (0.5 USDT)
+        "amount_expected": min_amount,         # Очікувана сума
         "wallet_address": TRON_WALLET,         # Адреса для оплати
         "created_at": datetime.utcnow(),       # Час створення запиту
-        "payment_completed": False             # Статус оплати
+        "payment_completed": False,            # Статус оплати
+        "test_mode": test_mode                 # Тестовий режим
     }
     
     # Оновлюємо або створюємо користувача
@@ -72,8 +123,9 @@ def create_payment():
     return jsonify({
         "payment_id": payment_id,
         "wallet_address": TRON_WALLET,
-        "amount": MIN_AMOUNT,
-        "currency": "USDT (TRC-20)"
+        "amount": min_amount,
+        "currency": "USDT (TRC-20)",
+        "test_mode": test_mode
     })
 
 @app.route("/check-payment", methods=["POST"])
@@ -81,9 +133,13 @@ def check_payment():
     """Перевіряємо чи надійшла оплата від користувача (браузерний ID)"""
     data = request.get_json()
     user_id = data.get("user_id")
+    test_mode = data.get("test_mode", False)  # Тестовий режим
     
     if not user_id:
         return jsonify({"error": "user_id обов'язковий"}), 400
+    
+    # Визначаємо мінімальну суму
+    min_amount = MIN_AMOUNT_TEST if test_mode else MIN_AMOUNT
     
     # Знаходимо користувача
     user = users_collection.find_one({"user_id": user_id})
@@ -118,23 +174,33 @@ def check_payment():
     headers = {"accept": "application/json"}
     
     try:
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=headers, timeout=15)
+        response.raise_for_status()  # Піднімає помилку для HTTP статусів 4xx/5xx
         data_response = response.json()
+        
+        print(f"TRON API Response: {len(data_response.get('data', []))} transactions found")
         
         # Часовий діапазон для пошуку (останні 60 хвилин)
         recent_time = datetime.utcnow() - timedelta(minutes=60)
         user_created_time = user.get("created_at", recent_time)
         search_from = max(recent_time, user_created_time)
         
+        print(f"Searching transactions from: {search_from}")
+        print(f"Looking for amount >= {min_amount} USDT")
+        
         for tx in data_response.get("data", []):
             tx_id = tx.get("transaction_id")
             value = int(tx.get("value", "0")) / (10 ** 6)  # Конвертуємо в USDT
             tx_timestamp = datetime.fromtimestamp(tx["block_timestamp"] / 1000)
             
+            print(f"Checking transaction: {value} USDT at {tx_timestamp}")
+            
             # Перевіряємо умови транзакції
-            if (value >= MIN_AMOUNT and 
+            if (value >= min_amount and 
                 tx_timestamp > search_from and
                 not transactions_collection.find_one({"tx_id": tx_id})):
+                
+                print(f"✅ Found matching transaction: {value} USDT, tx_id: {tx_id}")
                 
                 # Записуємо транзакцію
                 transaction_data = {
@@ -143,7 +209,8 @@ def check_payment():
                     "amount": value,
                     "timestamp": tx_timestamp,
                     "processed": True,
-                    "created_at": datetime.utcnow()
+                    "created_at": datetime.utcnow(),
+                    "test_mode": test_mode
                 }
                 transactions_collection.insert_one(transaction_data)
                 
@@ -155,7 +222,8 @@ def check_payment():
                     "starts_at": datetime.utcnow(),
                     "expires_at": expires_at,
                     "active": True,
-                    "created_at": datetime.utcnow()
+                    "created_at": datetime.utcnow(),
+                    "test_mode": test_mode
                 }
                 subscriptions_collection.insert_one(subscription_data)
                 
@@ -164,6 +232,8 @@ def check_payment():
                     {"user_id": user_id},
                     {"$set": {"payment_completed": True, "last_payment_at": datetime.utcnow()}}
                 )
+                
+                print(f"✅ Subscription created for user {user_id}")
                 
                 return jsonify({
                     "access": "granted",
@@ -177,13 +247,18 @@ def check_payment():
                     }
                 })
         
+        print(f"❌ No matching transactions found (need >= {min_amount} USDT)")
+        
         return jsonify({
             "access": "denied", 
-            "message": "Платіж не знайдений. Спробуйте через кілька хвилин."
+            "message": f"Платіж не знайдений. Надішліть {min_amount} USDT і спробуйте через кілька хвилин."
         })
         
+    except requests.RequestException as e:
+        print(f"TRON API error: {str(e)}")
+        return jsonify({"error": f"Помилка з'єднання з TRON API: {str(e)}"}), 500
     except Exception as e:
-        print(f"Error checking payment: {str(e)}")
+        print(f"General error: {str(e)}")
         return jsonify({"error": f"Помилка при перевірці платежу: {str(e)}"}), 500
 
 @app.route("/subscription-status", methods=["POST"])
@@ -221,9 +296,9 @@ def health():
     """Перевірка здоров'я сервера"""
     return jsonify({
         "status": "ok", 
-        "version": "FUNNEL_PAYMENT_SYSTEM_2024",
+        "version": "FUNNEL_PAYMENT_SYSTEM_2024_FIXED",
         "timestamp": datetime.utcnow().isoformat(),
-        "endpoints": ["/health", "/subscription-status", "/check-payment", "/create-payment"]
+        "endpoints": ["/health", "/subscription-status", "/check-payment", "/create-payment", "/debug-tron"]
     })
 
 if __name__ == "__main__":
