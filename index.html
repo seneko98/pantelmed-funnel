@@ -1,12 +1,126 @@
 <!DOCTYPE html>
-<html>
+<html lang="uk">
 <head>
-    <title>PantelMed - Розширений доступ</title>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏥 PantelMed - Медична платформа</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* Навігаційне меню */
+        .navigation {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-container {
+            max-width: 500px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .nav-button {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .nav-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+        
+        .nav-button.active {
+            background: rgba(255,255,255,0.3);
+            border-color: white;
+        }
+        
+        /* Мобільна адаптація */
+        @media (max-width: 480px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 10px;
+                padding: 0 15px;
+            }
+            
+            .nav-menu {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .nav-button {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+        }
+        
+        /* Telegram Login Widget стилі */
+        .telegram-login-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+            border-left: 4px solid #0088cc;
+        }
+        
+        .telegram-user-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+            vertical-align: middle;
+        }
+    </style>
 </head>
 <body>
+    <!-- Навігаційне меню -->
+    <nav class="navigation">
+        <div class="nav-container">
+            <a href="#" class="logo">🏥 PantelMed</a>
+            <div class="nav-menu">
+                <a href="#" class="nav-button active" onclick="showSubscription()">
+                    💊 Підписка
+                </a>
+                <a href="shop.html" class="nav-button" onclick="showShop()">
+                    🛒 PantelMed Shop
+                </a>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
         <div class="header">
             <h1>🏥 PantelMed</h1>
@@ -14,6 +128,14 @@
         </div>
         
         <div class="content">
+            <!-- Telegram Login Integration -->
+            <div id="telegram-section" class="telegram-login-section">
+                <h3>🔐 Авторизація через Telegram</h3>
+                <p>Увійдіть через Telegram для персоналізованого досвіду</p>
+                <div id="telegram-login-widget"></div>
+                <div id="telegram-user-info" class="telegram-user-info" style="display: none;"></div>
+            </div>
+            
             <div class="user-info">
                 <strong>🆔 Ваш ID:</strong> <span class="user-id" id="userIdDisplay">Генерується...</span>
                 <div style="margin-top: 8px; font-size: 12px; color: #666;">
@@ -82,28 +204,113 @@
     </div>
 
     <script>
-        // API Base URL - використовуємо той самий домен
+        // API Base URL
         const API_BASE = window.location.origin;
+        
+        // Глобальні змінні
+        let currentTelegramUser = null;
+        let userId = null;
 
-        // Функція генерації унікального ID
+        // Telegram Web App ініціалізація
+        function initTelegramWebApp() {
+            if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
+                const tg = window.Telegram.WebApp;
+                tg.ready();
+                
+                // Отримуємо дані користувача
+                if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                    const telegramUser = tg.initDataUnsafe.user;
+                    handleTelegramLogin(telegramUser, 'webapp');
+                }
+            }
+        }
+
+        // Telegram Login Widget
+        function initTelegramLoginWidget() {
+            const script = document.createElement('script');
+            script.async = true;
+            script.src = 'https://telegram.org/js/telegram-widget.js?22';
+            script.setAttribute('data-telegram-login', 'pantelmed_bot');
+            script.setAttribute('data-size', 'large');
+            script.setAttribute('data-radius', '10');
+            script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+            script.setAttribute('data-request-access', 'write');
+            
+            document.getElementById('telegram-login-widget').appendChild(script);
+        }
+
+        // Обробка авторизації через Telegram
+        function onTelegramAuth(user) {
+            handleTelegramLogin(user, 'widget');
+        }
+
+        async function handleTelegramLogin(telegramUser, source) {
+            try {
+                currentTelegramUser = telegramUser;
+                
+                // Відправляємо дані на сервер
+                const response = await fetch(`${API_BASE}/api/telegram-login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        telegram_user: telegramUser,
+                        source: source
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    userId = result.user_id;
+                    showTelegramUserInfo(telegramUser);
+                    document.getElementById('userIdDisplay').textContent = userId;
+                    
+                    // Перевіряємо статус підписки
+                    checkSubscriptionStatus();
+                } else {
+                    console.error('Telegram login failed:', result.error);
+                }
+            } catch (error) {
+                console.error('Telegram login error:', error);
+            }
+        }
+
+        function showTelegramUserInfo(user) {
+            const userInfoDiv = document.getElementById('telegram-user-info');
+            userInfoDiv.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    ${user.photo_url ? `<img src="${user.photo_url}" class="user-avatar" alt="Avatar">` : '👤'}
+                    <div>
+                        <strong>🎉 Вітаємо, ${user.first_name}!</strong><br>
+                        <small>@${user.username || 'no_username'} | Telegram ID: ${user.id}</small>
+                    </div>
+                </div>
+            `;
+            userInfoDiv.style.display = 'block';
+            
+            // Приховуємо login widget
+            document.getElementById('telegram-login-widget').style.display = 'none';
+        }
+
+        // Стандартні функції (з оригінального коду)
         function generateUserId() {
             return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         }
 
-        // Отримання або створення User ID
         function getUserId() {
-            let userId = localStorage.getItem('pantelmed_user_id');
-            if (!userId) {
-                userId = generateUserId();
-                localStorage.setItem('pantelmed_user_id', userId);
-                console.log('Створено новий User ID:', userId);
+            if (userId) return userId;
+            
+            let storedUserId = localStorage.getItem('pantelmed_user_id');
+            if (!storedUserId) {
+                storedUserId = generateUserId();
+                localStorage.setItem('pantelmed_user_id', storedUserId);
+                console.log('Створено новий User ID:', storedUserId);
             }
-            return userId;
+            userId = storedUserId;
+            return storedUserId;
         }
-
-        // Ініціалізація
-        const userId = getUserId();
-        document.getElementById('userIdDisplay').textContent = userId;
 
         // Елементи DOM
         const statusCard = document.getElementById('statusCard');
@@ -113,13 +320,11 @@
         const checkPaymentBtn = document.getElementById('checkPaymentBtn');
         const subscriptionInfo = document.getElementById('subscriptionInfo');
 
-        // Функція показу статусу
         function showStatus(message, type = 'info') {
             statusCard.className = `status-card ${type}`;
             statusContent.innerHTML = message;
         }
 
-        // Копіювання адреси гаманця
         function copyWallet() {
             const walletAddress = "TQeHa8VdwfyybxtioW4ggbnDC1rbWe8nFa";
             navigator.clipboard.writeText(walletAddress).then(() => {
@@ -130,21 +335,20 @@
             });
         }
 
-        // Функція перевірки статусу підписки
         async function checkSubscriptionStatus() {
+            const currentUserId = getUserId();
             try {
                 const response = await fetch(`${API_BASE}/subscription-status`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ user_id: userId })
+                    body: JSON.stringify({ user_id: currentUserId })
                 });
 
                 const data = await response.json();
 
                 if (data.has_subscription && data.active) {
-                    // Активна підписка
                     showStatus("✅ У вас є активна підписка!", 'success');
                     subscriptionInfo.innerHTML = `
                         <strong>📅 Активна до:</strong> ${new Date(data.expires_at).toLocaleDateString('uk-UA')}<br>
@@ -153,7 +357,6 @@
                     premiumContent.classList.add('show');
                     paymentSection.style.display = 'none';
                 } else {
-                    // Потрібна оплата
                     showStatus("🔒 Для доступу до преміум функцій потрібна підписка", 'warning');
                     paymentSection.style.display = 'block';
                     premiumContent.classList.remove('show');
@@ -165,8 +368,8 @@
             }
         }
 
-        // Функція перевірки платежу
         async function checkPayment() {
+            const currentUserId = getUserId();
             checkPaymentBtn.disabled = true;
             checkPaymentBtn.innerHTML = '<span class="loading"></span> Перевіряємо платіж...';
 
@@ -176,7 +379,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ user_id: userId })
+                    body: JSON.stringify({ user_id: currentUserId })
                 });
 
                 const data = await response.json();
@@ -207,24 +410,74 @@
             }
         }
 
-        // Функція завантаження контенту (заглушка)
         function downloadContent() {
             alert("🚀 Функція завантаження буде додана в наступному оновленні!");
         }
 
-        // Автоматична перевірка статусу при завантаженні
+        // Навігаційні функції
+        function showSubscription() {
+            // Поточна сторінка (підписка)
+            document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.nav-button[onclick="showSubscription()"]').classList.add('active');
+        }
+
+        function showShop() {
+            // Перехід до магазину
+            window.location.href = 'shop.html';
+        }
+
+        // Ініціалізація при завантаженні
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('PantelMed ініціалізовано з User ID:', userId);
+            console.log('PantelMed ініціалізовано');
+            
+            // Ініціалізуємо User ID
+            const currentUserId = getUserId();
+            document.getElementById('userIdDisplay').textContent = currentUserId;
+            
+            // Ініціалізуємо Telegram
+            initTelegramWebApp();
+            
+            // Якщо немає WebApp, показуємо Login Widget
+            setTimeout(() => {
+                if (!currentTelegramUser) {
+                    initTelegramLoginWidget();
+                }
+            }, 1000);
+            
+            // Перевіряємо статус підписки
             checkSubscriptionStatus();
         });
 
-        // Періодична перевірка кожні 30 секунд (якщо сторінка активна)
+        // Періодична перевірка статусу
         setInterval(() => {
             if (document.visibilityState === 'visible' && paymentSection.style.display !== 'none') {
                 console.log('Автоматична перевірка статусу...');
                 checkSubscriptionStatus();
             }
         }, 30000);
+
+        // Обробка URL параметрів (з Telegram бота)
+        const urlParams = new URLSearchParams(window.location.search);
+        const telegramUserId = urlParams.get('user_id');
+        const source = urlParams.get('source');
+
+        if (telegramUserId && source === 'telegram') {
+            // Отримуємо дані користувача з сервера
+            fetch(`${API_BASE}/api/telegram-user/${telegramUserId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.telegram_id) {
+                        handleTelegramLogin({
+                            id: data.telegram_id,
+                            first_name: data.first_name,
+                            last_name: data.last_name,
+                            username: data.username,
+                            photo_url: data.photo_url
+                        }, 'bot_redirect');
+                    }
+                })
+                .catch(error => console.log('Bot redirect user not found'));
+        }
     </script>
 </body>
 </html>
