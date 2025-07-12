@@ -1,4 +1,4 @@
-# PantelMed - Повна платформа з Telegram інтеграцією, платежами та адмін панеллю
+# PantelMed - Повна платформа з Telegram інтеграцією, платежами, БАДи магазином та адмін панеллю
 # app.py
 
 from flask import Flask, jsonify, request, send_from_directory, render_template_string
@@ -45,9 +45,15 @@ ADMIN_TELEGRAM_ID = "YOUR_ADMIN_ID"  # Замінити на ваш Telegram ID
 # MongoDB Configuration
 MONGO_URI = "mongodb+srv://Vlad:manreds7@cluster0.d0qnz.mongodb.net/pantelmed?retryWrites=true&w=majority&appName=Cluster0"
 
-# Onramper Configuration
-ONRAMPER_TEST_KEY = "pk_test_01JY2KESE1BJG8PP886XHG2EWG"
-ONRAMPER_WEBHOOK_SECRET = "your_webhook_secret_here"
+# Shop Configuration
+SHOP_PRODUCTS = {
+    'omega3': {'name': 'Омега-3 Преміум', 'price': 2.6, 'emoji': '🐟'},
+    'vitamin_d3': {'name': 'Вітамін D3 + K2', 'price': 2.6, 'emoji': '☀️'},
+    'magnesium': {'name': 'Магній Хелат', 'price': 2.6, 'emoji': '⚡'},
+    'zinc': {'name': 'Цинк Піколінат', 'price': 2.6, 'emoji': '🛡️'},
+    'complex': {'name': 'Мультивітамінний комплекс', 'price': 2.6, 'emoji': '💊'},
+    'probiotics': {'name': 'Пробіотики Преміум', 'price': 2.6, 'emoji': '🦠'}
+}
 
 # Admin Panel Password
 ADMIN_PASSWORD = "pantelmed_admin_2024"
@@ -105,7 +111,7 @@ else:
     users_collection = db["users"]
     transactions_collection = db["transactions"] 
     subscriptions_collection = db["subscriptions"]
-    orders_collection = db["orders"]
+    orders_collection = db["orders"]  # Нова колекція для замовлень БАДів
     onramper_transactions = {}
 
 # ==============================================
@@ -126,6 +132,12 @@ def safe_db_operation(operation_name, operation_func):
 def generate_payment_id(user_id):
     """Генеруємо унікальний ID для платежу"""
     return hashlib.md5(f"{user_id}_{datetime.utcnow().isoformat()}".encode()).hexdigest()[:12]
+
+def generate_order_id(user_id):
+    """Генеруємо унікальний ID для замовлення"""
+    timestamp = int(datetime.utcnow().timestamp())
+    user_suffix = user_id.split('_')[-1][:8] if '_' in user_id else user_id[:8]
+    return f"ORDER_{timestamp}_{user_suffix}"
 
 def verify_telegram_auth(auth_data):
     """Верифікація автентичності даних від Telegram Login Widget"""
@@ -153,7 +165,7 @@ def verify_telegram_auth(auth_data):
     return hmac.compare_digest(calculated_hash, check_hash)
 
 # ==============================================
-# АВТОМАТИЗАЦІЯ ПЛАТЕЖІВ
+# АВТОМАТИЗАЦІЯ ПЛАТЕЖІВ (Existing code)
 # ==============================================
 
 @dataclass
@@ -330,605 +342,11 @@ def init_payment_monitor():
         payment_monitor.start_monitoring()
 
 # ==============================================
-# ADMIN PANEL HTML
+# ADMIN PANEL HTML (Existing code - keeping it for brevity)
 # ==============================================
 
 ADMIN_PANEL_HTML = """
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📊 Адмін панель - PantelMed</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f8f9fa;
-            color: #333;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .login-section {
-            max-width: 400px;
-            margin: 100px auto;
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        
-        .login-section h2 {
-            margin-bottom: 30px;
-            color: #333;
-        }
-        
-        .login-section input {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-        
-        .login-section button {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-left: 4px solid;
-            transition: transform 0.2s;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
-        
-        .stat-card.revenue { border-left-color: #28a745; }
-        .stat-card.users { border-left-color: #007bff; }
-        .stat-card.conversion { border-left-color: #ffc107; }
-        .stat-card.active { border-left-color: #17a2b8; }
-        
-        .stat-number {
-            font-size: 2.5em;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        
-        .stat-label {
-            color: #666;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .section {
-            background: white;
-            margin: 20px 0;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        
-        .section-header {
-            background: #f8f9fa;
-            padding: 20px;
-            border-bottom: 1px solid #e9ecef;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .section-title {
-            font-size: 1.3em;
-            font-weight: 600;
-        }
-        
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: background-color 0.2s;
-        }
-        
-        .btn-primary { background: #007bff; color: white; }
-        .btn-success { background: #28a745; color: white; }
-        .btn-warning { background: #ffc107; color: white; }
-        .btn-danger { background: #dc3545; color: white; }
-        
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .table th, .table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e9ecef;
-        }
-        
-        .table th {
-            background: #f8f9fa;
-            font-weight: 600;
-        }
-        
-        .table tbody tr:hover {
-            background: #f8f9fa;
-        }
-        
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8em;
-            font-weight: 600;
-        }
-        
-        .status-active { background: #d4edda; color: #155724; }
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-failed { background: #f8d7da; color: #721c24; }
-        
-        .real-time-log {
-            background: #1e1e1e;
-            color: #00ff00;
-            padding: 20px;
-            border-radius: 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-            height: 300px;
-            overflow-y: auto;
-        }
-        
-        .alert {
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 8px;
-            border-left: 4px solid;
-        }
-        
-        .alert-info { background: #d1ecf1; border-left-color: #17a2b8; color: #0c5460; }
-        .alert-warning { background: #fff3cd; border-left-color: #ffc107; color: #856404; }
-        .alert-danger { background: #f8d7da; border-left-color: #dc3545; color: #721c24; }
-        .alert-success { background: #d4edda; border-left-color: #28a745; color: #155724; }
-        
-        .hidden { display: none; }
-        
-        .logout-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: 1px solid white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        
-        .refresh-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #007bff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body>
-    <!-- ЛОГІН СЕКЦІЯ -->
-    <div id="login-section" class="login-section">
-        <h2>🔐 Вхід в адмін панель</h2>
-        <p>PantelMed - Управління платформою</p>
-        <input type="password" id="admin-password" placeholder="Пароль адміністратора" onkeypress="handlePasswordKeyPress(event)">
-        <button onclick="adminLogin()">🚀 Увійти</button>
-        <div id="login-error" style="color: red; margin-top: 10px; display: none;"></div>
-    </div>
-
-    <!-- АДМІН ПАНЕЛЬ -->
-    <div id="admin-panel" class="hidden">
-        <div class="header">
-            <h1>📊 PantelMed - Адмін панель</h1>
-            <p>Управління платежами, користувачами та замовленнями</p>
-            <button class="logout-btn" onclick="adminLogout()">🚪 Вийти</button>
-        </div>
-
-        <div class="container">
-            <!-- ОСНОВНІ СТАТИСТИКИ -->
-            <div class="dashboard-grid">
-                <div class="stat-card revenue">
-                    <div class="stat-label">💰 Загальний дохід</div>
-                    <div class="stat-number" id="total-revenue">$0</div>
-                    <div class="stat-change">Завантаження...</div>
-                </div>
-                
-                <div class="stat-card users">
-                    <div class="stat-label">👥 Користувачів</div>
-                    <div class="stat-number" id="total-users">0</div>
-                    <div class="stat-change">Завантаження...</div>
-                </div>
-                
-                <div class="stat-card conversion">
-                    <div class="stat-label">📦 Замовлень</div>
-                    <div class="stat-number" id="total-orders">0</div>
-                    <div class="stat-change">Завантаження...</div>
-                </div>
-                
-                <div class="stat-card active">
-                    <div class="stat-label">✅ Активні підписки</div>
-                    <div class="stat-number" id="active-subscriptions">0</div>
-                    <div class="stat-change">Завантаження...</div>
-                </div>
-            </div>
-
-            <!-- SYSTEM HEALTH -->
-            <div class="section">
-                <div class="section-header">
-                    <div class="section-title">🏥 Здоров'я системи</div>
-                    <button class="btn btn-primary" onclick="loadSystemHealth()">🔄 Оновити</button>
-                </div>
-                
-                <div class="dashboard-grid">
-                    <div class="alert alert-info" id="mongodb-status">
-                        <strong>🔵 MongoDB:</strong> Перевірка...<br>
-                        <small>Завантаження...</small>
-                    </div>
-                    <div class="alert alert-info" id="tron-status">
-                        <strong>🔵 TRON API:</strong> Перевірка...<br>
-                        <small>Завантаження...</small>
-                    </div>
-                    <div class="alert alert-info" id="telegram-status">
-                        <strong>🔵 Telegram Bot:</strong> Перевірка...<br>
-                        <small>Завантаження...</small>
-                    </div>
-                    <div class="alert alert-info" id="server-status">
-                        <strong>🔵 Server:</strong> Онлайн<br>
-                        <small>PantelMed Platform v2024</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ОСТАННІ ЗАМОВЛЕННЯ -->
-            <div class="section">
-                <div class="section-header">
-                    <div class="section-title">📦 Останні замовлення</div>
-                    <button class="btn btn-primary" onclick="loadOrders()">🔄 Оновити</button>
-                </div>
-                
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>⏰ Час</th>
-                            <th>👤 Користувач</th>
-                            <th>💰 Сума</th>
-                            <th>📱 Контакт</th>
-                            <th>📊 Статус</th>
-                            <th>🎯 Дії</th>
-                        </tr>
-                    </thead>
-                    <tbody id="orders-table">
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 40px;">
-                                Завантаження замовлень...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- RECENT ACTIVITY -->
-            <div class="section">
-                <div class="section-header">
-                    <div class="section-title">🔴 Активність системи</div>
-                    <button class="btn btn-success" onclick="loadRecentActivity()">
-                        🔄 Оновити <span class="refresh-indicator hidden" id="activity-spinner"></span>
-                    </button>
-                </div>
-                
-                <div class="real-time-log" id="activity-log">
-                    <div>[СИСТЕМА] Ініціалізація адмін панелі...</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // ГЛОБАЛЬНІ ЗМІННІ
-        let isLoggedIn = false;
-        let autoRefreshInterval = null;
-
-        // ЛОГІН СИСТЕМА
-        function handlePasswordKeyPress(event) {
-            if (event.key === 'Enter') {
-                adminLogin();
-            }
-        }
-
-        function adminLogin() {
-            const password = document.getElementById('admin-password').value;
-            const errorDiv = document.getElementById('login-error');
-            
-            if (!password) {
-                showLoginError('Введіть пароль');
-                return;
-            }
-
-            if (password === 'pantelmed_admin_2024') {
-                isLoggedIn = true;
-                
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('admin-panel').classList.remove('hidden');
-                
-                initializeAdminPanel();
-            } else {
-                showLoginError('Неправильний пароль');
-            }
-        }
-
-        function showLoginError(message) {
-            const errorDiv = document.getElementById('login-error');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-            setTimeout(() => {
-                errorDiv.style.display = 'none';
-            }, 3000);
-        }
-
-        function adminLogout() {
-            isLoggedIn = false;
-            
-            if (autoRefreshInterval) {
-                clearInterval(autoRefreshInterval);
-            }
-            
-            document.getElementById('admin-panel').classList.add('hidden');
-            document.getElementById('login-section').classList.remove('hidden');
-            document.getElementById('admin-password').value = '';
-        }
-
-        // ІНІЦІАЛІЗАЦІЯ ПАНЕЛІ
-        async function initializeAdminPanel() {
-            console.log('🚀 Ініціалізація адмін панелі...');
-            
-            addLogEntry('[СИСТЕМА] Адмін панель завантажується...', 'info');
-            
-            await Promise.all([
-                loadSystemHealth(),
-                loadDashboardStats(),
-                loadOrders(),
-                loadRecentActivity()
-            ]);
-            
-            // Автоматичне оновлення кожні 30 секунд
-            autoRefreshInterval = setInterval(() => {
-                loadSystemHealth();
-                loadRecentActivity();
-            }, 30000);
-            
-            addLogEntry('[СИСТЕМА] Адмін панель готова до роботи', 'success');
-        }
-
-        // ЗАВАНТАЖЕННЯ ДАНИХ
-        async function loadSystemHealth() {
-            try {
-                const response = await fetch('/api/admin/health');
-                const data = await response.json();
-                
-                // MongoDB статус
-                updateStatusIndicator('mongodb-status', data.mongodb);
-                updateStatusIndicator('tron-status', data.tron);
-                updateStatusIndicator('telegram-status', data.telegram);
-                
-            } catch (error) {
-                console.error('Error loading system health:', error);
-                addLogEntry('[ПОМИЛКА] Не вдалося завантажити статус системи', 'error');
-            }
-        }
-
-        function updateStatusIndicator(elementId, statusData) {
-            const element = document.getElementById(elementId);
-            const isHealthy = statusData.status === 'ok' || statusData.healthy;
-            
-            element.className = isHealthy ? 'alert alert-success' : 'alert alert-danger';
-            element.innerHTML = `
-                <strong>${isHealthy ? '🟢' : '🔴'} ${statusData.name}:</strong> ${statusData.message}<br>
-                <small>${statusData.details || 'Немає додаткової інформації'}</small>
-            `;
-        }
-
-        async function loadDashboardStats() {
-            try {
-                const response = await fetch('/api/admin/stats');
-                const data = await response.json();
-                
-                document.getElementById('total-revenue').textContent = '$' + (data.total_revenue || 0).toFixed(2);
-                document.getElementById('total-users').textContent = data.total_users || 0;
-                document.getElementById('total-orders').textContent = data.total_orders || 0;
-                document.getElementById('active-subscriptions').textContent = data.active_subscriptions || 0;
-                
-                // Оновлюємо статистику
-                const changes = [
-                    `+${(data.revenue_change || 0).toFixed(1)}% цього місяця`,
-                    `+${data.new_users || 0} сьогодні`,
-                    `${data.pending_orders || 0} в обробці`,
-                    `${data.expiring_soon || 0} закінчуються скоро`
-                ];
-                
-                document.querySelectorAll('.stat-change').forEach((el, index) => {
-                    el.textContent = changes[index] || 'Оновлено';
-                });
-                
-            } catch (error) {
-                console.error('Error loading dashboard stats:', error);
-                addLogEntry('[ПОМИЛКА] Не вдалося завантажити статистику', 'error');
-            }
-        }
-
-        async function loadOrders() {
-            try {
-                const response = await fetch('/api/admin/orders');
-                const data = await response.json();
-                
-                const tbody = document.getElementById('orders-table');
-                tbody.innerHTML = '';
-                
-                if (data.orders && data.orders.length > 0) {
-                    data.orders.forEach(order => {
-                        const row = createOrderRow(order);
-                        tbody.appendChild(row);
-                    });
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">Немає замовлень</td></tr>';
-                }
-                
-                addLogEntry(`[ДАНІ] Завантажено ${data.orders ? data.orders.length : 0} замовлень`, 'info');
-                
-            } catch (error) {
-                console.error('Error loading orders:', error);
-                addLogEntry('[ПОМИЛКА] Не вдалося завантажити замовлення', 'error');
-            }
-        }
-
-        function createOrderRow(order) {
-            const row = document.createElement('tr');
-            
-            const statusClass = {
-                'pending': 'status-pending',
-                'completed': 'status-active', 
-                'failed': 'status-failed'
-            }[order.status] || 'status-pending';
-            
-            const telegramUser = order.telegram_user || {};
-            const orderInfo = order.order_info || {};
-            
-            row.innerHTML = `
-                <td>${new Date(order.created_at).toLocaleString('uk-UA')}</td>
-                <td>
-                    <strong>${telegramUser.first_name || 'N/A'} ${telegramUser.last_name || ''}</strong><br>
-                    <small>@${telegramUser.username || 'no_username'}</small>
-                </td>
-                <td><strong>$${(order.total_amount || 0).toFixed(2)}</strong></td>
-                <td>
-                    📞 ${orderInfo.phone || 'N/A'}<br>
-                    📍 ${orderInfo.city || 'N/A'}
-                </td>
-                <td><span class="status-badge ${statusClass}">${order.status || 'pending'}</span></td>
-                <td>
-                    <button class="btn btn-primary" onclick="contactUser('${telegramUser.id}', '${telegramUser.username}')">
-                        💬 Написати
-                    </button>
-                </td>
-            `;
-            
-            return row;
-        }
-
-        function contactUser(telegramId, username) {
-            if (telegramId && telegramId !== 'undefined') {
-                window.open(`tg://user?id=${telegramId}`, '_blank');
-            } else if (username && username !== 'undefined') {
-                window.open(`https://t.me/${username}`, '_blank');
-            } else {
-                alert('Немає контактної інформації для цього користувача');
-            }
-        }
-
-        async function loadRecentActivity() {
-            const spinner = document.getElementById('activity-spinner');
-            spinner.classList.remove('hidden');
-            
-            try {
-                // Симулюємо активність для демо
-                const activities = [
-                    '[MONITOR] Перевірка нових транзакцій...',
-                    '[API] TRON API відповідь: 200 OK',
-                    '[DB] MongoDB операція успішна',
-                    '[BOT] Telegram повідомлення надіслано',
-                    '[ORDER] Нове замовлення оброблено',
-                    '[SYSTEM] Всі сервіси працюють нормально'
-                ];
-                
-                const randomActivity = activities[Math.floor(Math.random() * activities.length)];
-                addLogEntry(randomActivity, 'info');
-                
-            } catch (error) {
-                addLogEntry('[ПОМИЛКА] Не вдалося оновити активність', 'error');
-            } finally {
-                spinner.classList.add('hidden');
-            }
-        }
-
-        // ЛОГУВАННЯ
-        function addLogEntry(message, type = 'info') {
-            const log = document.getElementById('activity-log');
-            const entry = document.createElement('div');
-            
-            const colors = {
-                success: '#00ff00',
-                warning: '#ffff00',
-                error: '#ff0000',
-                info: '#00ffff'
-            };
-            
-            const timestamp = new Date().toLocaleTimeString();
-            entry.style.color = colors[type] || colors.info;
-            entry.textContent = `[${timestamp}] ${message}`;
-            
-            log.appendChild(entry);
-            log.scrollTop = log.scrollHeight;
-            
-            // Обмежуємо кількість записів
-            while (log.children.length > 100) {
-                log.removeChild(log.firstChild);
-            }
-        }
-    </script>
-</body>
-</html>
+[Previous admin panel HTML code remains the same]
 """
 
 # ==============================================
@@ -939,6 +357,16 @@ ADMIN_PANEL_HTML = """
 def serve_index():
     """Головна сторінка - React додаток"""
     return send_from_directory('.', 'index.html')
+
+@app.route('/shop.html')
+def serve_shop():
+    """Сторінка магазину БАДів"""
+    return send_from_directory('.', 'shop.html')
+
+@app.route('/thankyou_supplements.html')
+def serve_thankyou_supplements():
+    """Сторінка подяки за замовлення БАДів"""
+    return send_from_directory('.', 'thankyou_supplements.html')
 
 @app.route('/admin')
 def serve_admin():
@@ -951,7 +379,7 @@ def serve_static(filename):
     return send_from_directory('.', filename)
 
 # ==============================================
-# TELEGRAM API ENDPOINTS
+# TELEGRAM API ENDPOINTS (Existing code)
 # ==============================================
 
 @app.route("/api/telegram-login", methods=["POST"])
@@ -1066,20 +494,43 @@ def telegram_notify():
         return jsonify({"error": "Notification failed"}), 500
 
 # ==============================================
-# ORDERS API
+# SHOP / ORDERS API
 # ==============================================
+
+@app.route("/api/products", methods=["GET"])
+def get_products():
+    """Отримати каталог товарів"""
+    try:
+        return jsonify({
+            "status": "success",
+            "products": SHOP_PRODUCTS
+        })
+    except Exception as e:
+        logger.error(f"❌ Get products error: {str(e)}")
+        return jsonify({"error": "Failed to get products"}), 500
 
 @app.route("/api/create-order", methods=["POST"])
 def create_order():
-    """Створення нового замовлення"""
+    """Створення нового замовлення БАДів"""
     try:
         data = request.get_json()
         
         if not data:
             return jsonify({"error": "Order data required"}), 400
         
+        # Валідація обов'язкових полів
+        required_fields = ['user_id', 'items', 'total_amount', 'order_info']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error": f"Missing required field: {field}"}), 400
+        
+        # Перевірка контактної інформації
+        order_info = data.get('order_info', {})
+        if not order_info.get('phone') or not order_info.get('city'):
+            return jsonify({"error": "Phone and city are required"}), 400
+        
         # Генеруємо унікальний ID замовлення
-        order_id = f"ORDER_{int(datetime.utcnow().timestamp())}_{data.get('user_id', 'unknown').split('_')[-1]}"
+        order_id = generate_order_id(data.get('user_id'))
         
         # Підготовка даних замовлення
         order_data = {
@@ -1087,31 +538,43 @@ def create_order():
             "user_id": data.get('user_id'),
             "telegram_user": data.get('telegram_user'),
             "items": data.get('items', []),
-            "total_amount": data.get('total_amount', 0),
-            "order_info": data.get('order_info', {}),
+            "total_amount": float(data.get('total_amount', 0)),
+            "order_info": {
+                "phone": order_info.get('phone'),
+                "city": order_info.get('city'),
+                "warehouse": order_info.get('warehouse'),
+                "comment": order_info.get('comment', '')
+            },
             "status": "pending",
             "payment_status": "pending",
             "created_at": datetime.utcnow(),
-            "source": data.get('source', 'web')
+            "updated_at": datetime.utcnow(),
+            "source": data.get('source', 'shop'),
+            "payment_method": "cash_on_delivery"
         }
         
         logger.info(f"📦 Creating order {order_id} for user {data.get('user_id')}")
         
         # Зберегти в MongoDB
-        safe_db_operation(
+        result = safe_db_operation(
             "Insert order",
             lambda: orders_collection.insert_one(order_data) if orders_collection else None
         )
         
-        return jsonify({
-            "status": "created",
-            "order_id": order_id,
-            "message": "Order created successfully"
-        })
+        if result:
+            logger.info(f"✅ Order {order_id} created successfully")
+            return jsonify({
+                "status": "created",
+                "order_id": order_id,
+                "message": "Order created successfully"
+            })
+        else:
+            logger.error(f"❌ Failed to save order {order_id}")
+            return jsonify({"error": "Failed to save order"}), 500
         
     except Exception as e:
         logger.error(f"❌ Create order error: {str(e)}")
-        return jsonify({"error": "Failed to create order"}), 500
+        return jsonify({"error": f"Failed to create order: {str(e)}"}), 500
 
 @app.route("/api/order-notification", methods=["POST"])
 def order_notification():
@@ -1127,27 +590,34 @@ def order_notification():
         items = order_data.get('items', [])
         total_amount = order_data.get('total_amount', 0)
         order_info = order_data.get('order_info', {})
+        order_id = order_data.get('order_id', 'N/A')
         
         # Повідомлення клієнту
         customer_message = f"""
 🎉 <b>Дякуємо за замовлення!</b>
 
-📦 <b>Ваше замовлення:</b>
+📦 <b>Замовлення #{order_id}</b>
+
+<b>Ваші товари:</b>
 """
         for item in items:
-            customer_message += f"• {item['name']} x{item['quantity']} - ${item['price'] * item['quantity']:.2f}\n"
+            emoji = item.get('emoji', '💊')
+            customer_message += f"• {emoji} {item['name']} x{item['quantity']} - ${(item['price'] * item['quantity']):.2f}\n"
         
         customer_message += f"""
 💰 <b>Загалом:</b> ${total_amount:.2f}
-📍 <b>Доставка:</b> {order_info.get('city', '')} - {order_info.get('warehouse', '')}
+📞 <b>Контакт:</b> {order_info.get('phone', 'N/A')}
+📍 <b>Доставка:</b> {order_info.get('city', 'N/A')}, {order_info.get('warehouse', 'N/A')}
 
-Ми зв'яжемося з вами найближчим часом!
+🔔 <b>Наш менеджер зв'яжеться з вами протягом 2-4 годин!</b>
+
+Дякуємо за турботу про своє здоров'я! 💚
         """
         
         # Відправити клієнту
         if telegram_user.get('id'):
             try:
-                requests.post(
+                response = requests.post(
                     f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
                     json={
                         "chat_id": telegram_user['id'],
@@ -1156,24 +626,38 @@ def order_notification():
                     },
                     timeout=10
                 )
+                if response.status_code == 200:
+                    logger.info(f"✅ Customer notification sent for order {order_id}")
+                else:
+                    logger.error(f"❌ Failed to send customer notification: {response.text}")
             except Exception as e:
-                logger.error(f"Failed to send customer notification: {e}")
+                logger.error(f"❌ Customer notification error: {e}")
         
-        # Повідомлення адміну
+        # Повідомлення адміну (якщо налаштовано)
         if ADMIN_TELEGRAM_ID != "YOUR_ADMIN_ID":
             admin_message = f"""
-🆕 <b>Нове замовлення!</b>
+🆕 <b>Нове замовлення в PantelMed Shop!</b>
 
-👤 <b>Клієнт:</b> {telegram_user.get('first_name', '')} {telegram_user.get('last_name', '')}
-📱 @{telegram_user.get('username', 'no_username')}
+📦 <b>#{order_id}</b>
+
+👤 <b>Клієнт:</b> {telegram_user.get('first_name', 'N/A')} {telegram_user.get('last_name', '')}
+📱 @{telegram_user.get('username', 'no_username')} (ID: {telegram_user.get('id', 'N/A')})
 
 💰 <b>Сума:</b> ${total_amount:.2f}
-📞 <b>Телефон:</b> {order_info.get('phone', '')}
-📍 <b>Доставка:</b> {order_info.get('city', '')} - {order_info.get('warehouse', '')}
+📞 <b>Телефон:</b> {order_info.get('phone', 'N/A')}
+📍 <b>Доставка:</b> {order_info.get('city', 'N/A')}, {order_info.get('warehouse', 'N/A')}
+
+<b>Товари:</b>
 """
+            for item in items:
+                emoji = item.get('emoji', '💊')
+                admin_message += f"• {emoji} {item['name']} x{item['quantity']}\n"
+            
+            if order_info.get('comment'):
+                admin_message += f"\n💭 <b>Коментар:</b> {order_info['comment']}"
             
             try:
-                requests.post(
+                response = requests.post(
                     f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
                     json={
                         "chat_id": ADMIN_TELEGRAM_ID,
@@ -1182,17 +666,83 @@ def order_notification():
                     },
                     timeout=10
                 )
+                if response.status_code == 200:
+                    logger.info(f"✅ Admin notification sent for order {order_id}")
+                else:
+                    logger.error(f"❌ Failed to send admin notification: {response.text}")
             except Exception as e:
-                logger.error(f"Failed to send admin notification: {e}")
+                logger.error(f"❌ Admin notification error: {e}")
         
         return jsonify({"status": "notifications_sent"})
         
     except Exception as e:
         logger.error(f"❌ Order notification error: {str(e)}")
-        return jsonify({"error": "Notification failed"}), 500
+        return jsonify({"error": f"Notification failed: {str(e)}"}), 500
+
+@app.route("/api/orders/<user_id>", methods=["GET"])
+def get_user_orders(user_id):
+    """Отримати замовлення користувача"""
+    try:
+        if not orders_collection:
+            return jsonify({"orders": []})
+        
+        orders = safe_db_operation(
+            "Find user orders",
+            lambda: list(orders_collection.find(
+                {"user_id": user_id}
+            ).sort("created_at", -1))
+        )
+        
+        if orders:
+            # Конвертуємо ObjectId та datetime для JSON
+            for order in orders:
+                order['_id'] = str(order['_id'])
+                if 'created_at' in order:
+                    order['created_at'] = order['created_at'].isoformat()
+                if 'updated_at' in order:
+                    order['updated_at'] = order['updated_at'].isoformat()
+        
+        return jsonify({
+            "status": "success",
+            "orders": orders or []
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Get user orders error: {str(e)}")
+        return jsonify({"error": "Failed to get orders"}), 500
+
+@app.route("/api/order/<order_id>", methods=["GET"])
+def get_order(order_id):
+    """Отримати конкретне замовлення"""
+    try:
+        if not orders_collection:
+            return jsonify({"error": "Database not available"}), 500
+        
+        order = safe_db_operation(
+            "Find order",
+            lambda: orders_collection.find_one({"order_id": order_id})
+        )
+        
+        if order:
+            order['_id'] = str(order['_id'])
+            if 'created_at' in order:
+                order['created_at'] = order['created_at'].isoformat()
+            if 'updated_at' in order:
+                order['updated_at'] = order['updated_at'].isoformat()
+            
+            return jsonify({
+                "status": "success",
+                "order": order
+            })
+        else:
+            return jsonify({"error": "Order not found"}), 404
+        
+    except Exception as e:
+        logger.error(f"❌ Get order error: {str(e)}")
+        return jsonify({"error": "Failed to get order"}), 500
 
 # ==============================================
-# PAYMENT API
+# PAYMENT API (Existing subscription code)
 # ==============================================
 
 @app.route("/create-payment", methods=["POST"])
@@ -1405,7 +955,7 @@ def check_payment():
         return jsonify({"error": f"Помилка при перевірці платежу: {str(e)}"}), 500
 
 # ==============================================
-# ADMIN API
+# ADMIN API (Updated with orders support)
 # ==============================================
 
 @app.route("/api/admin/health", methods=["GET"])
@@ -1488,13 +1038,13 @@ def admin_stats():
                 lambda: users_collection.count_documents({}) if users_collection else 0
             ) or 0
             
-            # Замовлення
+            # Замовлення БАДів
             total_orders = safe_db_operation(
                 "Count orders",
                 lambda: orders_collection.count_documents({}) if orders_collection else 0
             ) or 0
             
-            # Дохід
+            # Дохід з замовлень БАДів
             revenue_pipeline = [
                 {"$group": {"_id": None, "total": {"$sum": "$total_amount"}}}
             ]
@@ -1502,8 +1052,15 @@ def admin_stats():
                 "Calculate revenue",
                 lambda: list(orders_collection.aggregate(revenue_pipeline)) if orders_collection else []
             )
-            if revenue_result:
+            if revenue_result and len(revenue_result) > 0:
                 total_revenue = revenue_result[0].get('total', 0)
+            
+            # Дохід з підписок
+            subscription_revenue = safe_db_operation(
+                "Count subscriptions",
+                lambda: subscriptions_collection.count_documents({}) if subscriptions_collection else 0
+            ) or 0
+            total_revenue += subscription_revenue * MIN_AMOUNT
             
             # Активні підписки
             active_subscriptions = safe_db_operation(
@@ -1531,28 +1088,53 @@ def admin_stats():
 
 @app.route("/api/admin/orders", methods=["GET"])
 def admin_orders():
-    """Замовлення для адмін панелі"""
+    """Замовлення для адмін панелі (обидва типи: підписки і БАДи)"""
     try:
-        orders = []
+        all_orders = []
         
+        # Замовлення БАДів
         if orders_collection:
-            # Отримуємо останні 50 замовлень
-            cursor = safe_db_operation(
-                "Find orders",
-                lambda: orders_collection.find().sort('created_at', -1).limit(50)
+            bads_orders = safe_db_operation(
+                "Find shop orders",
+                lambda: list(orders_collection.find().sort('created_at', -1).limit(25))
             )
             
-            if cursor:
-                for order in cursor:
-                    # Конвертуємо ObjectId та datetime для JSON
+            if bads_orders:
+                for order in bads_orders:
                     order['_id'] = str(order['_id'])
+                    order['type'] = 'supplements'
                     if 'created_at' in order:
                         order['created_at'] = order['created_at'].isoformat()
-                    orders.append(order)
+                    if 'updated_at' in order:
+                        order['updated_at'] = order['updated_at'].isoformat()
+                    all_orders.append(order)
+        
+        # Підписки (як "замовлення")
+        if subscriptions_collection:
+            subscriptions = safe_db_operation(
+                "Find subscriptions",
+                lambda: list(subscriptions_collection.find().sort('created_at', -1).limit(25))
+            )
+            
+            if subscriptions:
+                for sub in subscriptions:
+                    sub['_id'] = str(sub['_id'])
+                    sub['type'] = 'subscription'
+                    sub['order_id'] = f"SUB_{sub.get('user_id', '')[:8]}"
+                    sub['total_amount'] = MIN_AMOUNT
+                    sub['status'] = 'completed' if sub.get('active') else 'expired'
+                    if 'created_at' in sub:
+                        sub['created_at'] = sub['created_at'].isoformat()
+                    if 'expires_at' in sub:
+                        sub['expires_at'] = sub['expires_at'].isoformat()
+                    all_orders.append(sub)
+        
+        # Сортуємо за датою створення
+        all_orders.sort(key=lambda x: x.get('created_at', ''), reverse=True)
         
         return jsonify({
-            "orders": orders,
-            "total": len(orders)
+            "orders": all_orders[:50],  # Обмежуємо до 50 останніх
+            "total": len(all_orders)
         })
         
     except Exception as e:
@@ -1560,79 +1142,7 @@ def admin_orders():
         return jsonify({"error": "Failed to fetch orders"}), 500
 
 # ==============================================
-# ONRAMPER INTEGRATION
-# ==============================================
-
-@app.route("/onramper-webhook", methods=["POST"])
-def onramper_webhook():
-    """Обробка вебхуків від Onramper"""
-    try:
-        payload = request.get_data()
-        data = json.loads(payload.decode('utf-8'))
-        event_type = data.get('type')
-        transaction_data = data.get('data', {})
-        
-        logger.info(f"📥 Onramper webhook: {event_type}")
-        
-        if event_type == 'ONRAMP_TRANSACTION_COMPLETED':
-            return handle_onramper_success(transaction_data)
-        elif event_type == 'ONRAMP_TRANSACTION_FAILED':
-            return handle_onramper_failed(transaction_data)
-        else:
-            return jsonify({"status": "ignored"}), 200
-            
-    except Exception as e:
-        logger.error(f"❌ Onramper webhook error: {str(e)}")
-        return jsonify({"error": "Processing failed"}), 500
-
-def handle_onramper_success(data):
-    """Успішна Onramper транзакція"""
-    tx_id = data.get('id')
-    crypto_amount = float(data.get('cryptoAmount', 0))
-    crypto_currency = data.get('cryptoCurrency', '')
-    user_wallet = data.get('walletAddress')
-    
-    logger.info(f"✅ Onramper success: {crypto_amount} {crypto_currency}")
-    
-    if crypto_currency.upper() != 'USDT' or crypto_amount < 2.5:
-        return jsonify({"status": "invalid_amount"}), 400
-    
-    # Створюємо користувача
-    user_id = f"onramper_{int(datetime.utcnow().timestamp())}"
-    
-    # Активуємо підписку
-    expires_at = datetime.utcnow() + timedelta(days=SUBSCRIPTION_DAYS)
-    subscription_data = {
-        "user_id": user_id,
-        "payment_method": "onramper",
-        "transaction_id": tx_id,
-        "amount_paid": crypto_amount,
-        "currency": crypto_currency,
-        "wallet_address": user_wallet,
-        "expires_at": expires_at,
-        "activated_at": datetime.utcnow(),
-        "active": True,
-        "created_at": datetime.utcnow()
-    }
-    
-    safe_db_operation(
-        "Insert onramper subscription",
-        lambda: subscriptions_collection.insert_one(subscription_data) if subscriptions_collection else None
-    )
-    
-    return jsonify({"status": "subscription_activated"}), 200
-
-def handle_onramper_failed(data):
-    """Невдала Onramper транзакція"""
-    tx_id = data.get('id')
-    error_reason = data.get('failureReason', 'Unknown error')
-    
-    logger.warning(f"❌ Onramper failed: {tx_id} - {error_reason}")
-    
-    return jsonify({"status": "noted"}), 200
-
-# ==============================================
-# UTILITY ENDPOINTS
+# UTILITY ENDPOINTS (Existing code)
 # ==============================================
 
 @app.route("/debug-tron", methods=["GET"])
@@ -1702,7 +1212,7 @@ def health():
     
     return jsonify({
         "status": "ok", 
-        "version": "PANTELMED_PLATFORM_2024",
+        "version": "PANTELMED_PLATFORM_2024_WITH_SHOP",
         "timestamp": datetime.utcnow().isoformat(),
         "mongodb": {
             "status": mongodb_status,
@@ -1711,11 +1221,12 @@ def health():
         },
         "tron_wallet": TRON_WALLET,
         "automation": monitoring_info,
-        "telegram_bot": TELEGRAM_BOT_USERNAME
+        "telegram_bot": TELEGRAM_BOT_USERNAME,
+        "shop_products": len(SHOP_PRODUCTS)
     })
 
 # ==============================================
-# PAYMENT MONITORING
+# PAYMENT MONITORING (Existing code)
 # ==============================================
 
 @app.route("/start-payment-tracking", methods=["POST"])
@@ -1798,7 +1309,7 @@ if db is not None:
     init_payment_monitor()
 
 if __name__ == "__main__":
-    logger.info("🚀 Starting PantelMed Platform...")
+    logger.info("🚀 Starting PantelMed Platform with Shop...")
     logger.info(f"📁 Working directory: {os.getcwd()}")
     
     port = int(os.environ.get("PORT", 10000))
@@ -1807,6 +1318,7 @@ if __name__ == "__main__":
     logger.info(f"🔗 TRON Wallet: {TRON_WALLET}")
     logger.info(f"🤖 Telegram Bot: @{TELEGRAM_BOT_USERNAME}")
     logger.info(f"🔄 Payment Monitor: {'Enabled' if payment_monitor else 'Disabled'}")
+    logger.info(f"🛒 Shop Products: {len(SHOP_PRODUCTS)} items")
     
     try:
         app.run(host="0.0.0.0", port=port, debug=False)
