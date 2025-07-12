@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎉 Дякуємо за замовлення! - PantelMed Shop</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Додаткові стилі для сторінки подяки */
+        .celebration-header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .celebration-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.1) 10px,
+                rgba(255,255,255,0.1) 20px
+            );
+            animation: celebrate 20s linear infinite;
+        }
+        
+        @keyframes celebrate {
+            0% { transform: translateX(-50%) translateY(-50%) rotate(0deg); }
+            100% { transform: translateX(-50%) translateY(-50%) rotate(360deg); }
+        }
+        
+        .celebration-emoji {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 2s ease-in-out infinite;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .celebration-text {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .order-details {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .order-id-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            border: 2px dashed #4CAF50;
+        }
+        
+        .order-id {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 10px 0;
+        }
+        
+        .contact-info {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .delivery-steps {
+            margin: 30px 0;
+        }
+        
+        .delivery-step {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .step-icon {
+            background: #ff9800;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .selling-text {
+            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 30px 0;
+            border-left: 4px solid #4CAF50;
+            text-align: center;
+        }
+        
+        .selling-text h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+        }
+        
+        .selling-text p {
+            color: #388e3c;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .team-signature {
+            background: #fff3e0;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+            border-left: 4px solid #ff9800;
+            font-style: italic;
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .social-link {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 50%;
+            text-decoration: none;
+            font-size: 24px;
+            transition: all 0.3s ease;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .social-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .social-link.telegram {
+            background: #0088cc;
+            color: white;
+        }
+        
+        .social-link.viber {
+            background: #59267c;
+            color: white;
+        }
+        
+        .social-link.whatsapp {
+            background: #25d366;
+            color: white;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .btn-back {
+            background: #2196F3;
+            color: white;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .btn-shop {
+            background: #4CAF50;
+            color: white;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .btn-subscription {
+            background: #ff9800;
+            color: white;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        /* Конфетті анімація */
+        .confetti {
+            position: fixed;
+            top: -10px;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1000;
+        }
+        
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #4CAF50;
+            animation: confetti-fall 3s linear infinite;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Мобільна адаптація */
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .action-buttons .btn {
+                min-width: auto;
+            }
+            
+            .celebration-emoji {
+                font-size: 60px;
+            }
+            
+            .social-links {
+                gap: 15px;
+            }
+            
+            .social-link {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Конфетті -->
+    <div class="confetti" id="confetti"></div>
+
+    <div class="container">
+        <div class="celebration-header">
+            <div class="celebration-emoji">🎉</div>
+            <div class="celebration-text">
+                <h1>Дякуємо за замовлення!</h1>
+                <h2>Ваше здоров'я - наш пріоритет</h2>
+            </div>
+        </div>
+        
+        <div class="content">
+            <!-- ID замовлення -->
+            <div class="order-id-section">
+                <h3>📦 Номер вашого замовлення</h3>
+                <div class="order-id" id="order-id">Завантаження...</div>
+                <p style="color: #666; font-size: 14px;">
+                    Збережіть цей номер для відстеження замовлення
+                </p>
+            </div>
+
+            <!-- Деталі замовлення -->
+            <div class="order-details" id="order-details">
+                <h3>📋 Деталі замовлення</h3>
+                <div id="order-content">Завантаження...</div>
+            </div>
+
+            <!-- Контактна інформація -->
+            <div class="contact-info">
+                <h3>📞 Наш менеджер зв'яжеться з вами</h3>
+                <p><strong>⏰ Час обробки:</strong> протягом 2-4 годин (в робочий час)</p>
+                <p><strong>📱 Контакт:</strong> <span id="customer-phone">Завантаження...</span></p>
+                <p><strong>📍 Доставка:</strong> <span id="delivery-address">Завантаження...</span></p>
+                <p style="color: #666; font-size: 14px; margin-top: 10px;">
+                    💡 Якщо у вас змінились контактні дані, напишіть нам в Telegram
+                </p>
+            </div>
+
+            <!-- Кроки доставки -->
+            <div class="delivery-steps">
+                <h3>🚚 Як відбуватиметься доставка:</h3>
+                
+                <div class="delivery-step">
+                    <div class="step-icon">1</div>
+                    <div>
+                        <strong>Підтвердження замовлення</strong><br>
+                        Менеджер зв'яжеться з вами для підтвердження деталей
+                    </div>
+                </div>
+                
+                <div class="delivery-step">
+                    <div class="step-icon">2</div>
+                    <div>
+                        <strong>Відправка товару</strong><br>
+                        Після підтвердження відправляємо товар Новою Поштою
+                    </div>
+                </div>
+                
+                <div class="delivery-step">
+                    <div class="step-icon">3</div>
+                    <div>
+                        <strong>Отримання</strong><br>
+                        Отримайте посилку у вказаному відділенні Нової Пошти
+                    </div>
+                </div>
+                
+                <div class="delivery-step">
+                    <div class="step-icon">4</div>
+                    <div>
+                        <strong>Оплата при отриманні</strong><br>
+                        Сплачуйте за товар готівкою або карткою при отриманні
+                    </div>
+                </div>
+            </div>
+
+            <!-- Продаючий текст -->
+            <div class="selling-text">
+                <h3>💚 Вітаємо вас з початком турботи про здоров'я!</h3>
+                <p>
+                    <strong>Ви зробили правильний вибір!</strong> Інвестиція в якісні БАДи - 
+                    це інвестиція у ваше майбутнє здоров'я та довголіття.
+                </p>
+                <p>
+                    Наші преміум добавки допоможуть вам відчути прилив енергії, 
+                    покращити самопочуття та підтримати організм на найвищому рівні.
+                </p>
+                <p>
+                    <strong>🎯 Пам'ятайте:</strong> турбота про здоров'я сьогодні - 
+                    це запорука активного та щасливого життя завтра!
+                </p>
+            </div>
+
+            <!-- Підпис команди -->
+            <div class="team-signature">
+                <p>
+                    <strong>Дякуємо за довіру!</strong><br>
+                    З повагою та турботою про ваше здоров'я,<br>
+                    <strong>🏥 Команда PantelMed</strong>
+                </p>
+            </div>
+
+            <!-- Соціальні мережі -->
+            <div style="text-align: center; margin: 30px 0;">
+                <h3>📱 Зв'яжіться з нами:</h3>
+                <div class="social-links">
+                    <a href="https://t.me/pantelmed_bot" class="social-link telegram" title="Telegram">
+                        📱
+                    </a>
+                    <a href="viber://chat?number=+380XXXXXXXXX" class="social-link viber" title="Viber">
+                        💜
+                    </a>
+                    <a href="https://wa.me/380XXXXXXXXX" class="social-link whatsapp" title="WhatsApp">
+                        💚
+                    </a>
+                </div>
+                <p style="color: #666; font-size: 14px; margin-top: 15px;">
+                    Telegram | Viber | WhatsApp
+                </p>
+            </div>
+
+            <!-- Кнопки дій -->
+            <div class="action-buttons">
+                <button onclick="goToShop()" class="btn btn-shop">
+                    🛒 Продовжити покупки
+                </button>
+                <button onclick="goToSubscription()" class="btn btn-subscription">
+                    💊 Медична підписка
+                </button>
+                <button onclick="goToMain()" class="btn btn-back">
+                    🏠 На головну
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Глобальні змінні
+        let orderData = null;
+
+        // Ініціалізація при завантаженні
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeThankYouPage();
+            startConfetti();
+            
+            // Зупинити конфетті через 5 секунд
+            setTimeout(stopConfetti, 5000);
+        });
+
+        function initializeThankYouPage() {
+            // Отримуємо параметри з URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('order_id');
+            
+            if (orderId) {
+                document.getElementById('order-id').textContent = orderId;
+                loadOrderDetails(orderId);
+            } else {
+                displayMockOrderData();
+            }
+        }
+
+        async function loadOrderDetails(orderId) {
+            try {
+                // В реальному застосунку тут був би запит до API
+                // Поки що використовуємо дані з localStorage
+                const orderData = localStorage.getItem('last_order');
+                if (orderData) {
+                    const order = JSON.parse(orderData);
+                    displayOrderData(order);
+                } else {
+                    displayMockOrderData();
+                }
+            } catch (error) {
+                console.error('Error loading order details:', error);
+                displayMockOrderData();
+            }
+        }
+
+        function displayOrderData(order) {
+            // Відображаємо деталі замовлення
+            const orderContent = document.getElementById('order-content');
+            const customerPhone = document.getElementById('customer-phone');
+            const deliveryAddress = document.getElementById('delivery-address');
+
+            if (order.items && order.items.length > 0) {
+                orderContent.innerHTML = `
+                    <div style="margin-bottom: 15px;">
+                        <strong>🛍️ Товари:</strong>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            ${order.items.map(item => 
+                                `<li>${item.emoji || '💊'} ${item.name} × ${item.quantity} - $${(item.price * item.quantity).toFixed(2)}</li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                    <div style="padding: 10px; background: #f0f8f0; border-radius: 8px;">
+                        <strong>💰 Загальна сума: $${order.total_amount?.toFixed(2) || '0.00'}</strong>
+                        <br><small style="color: #666;">Оплата при отриманні</small>
+                    </div>
+                `;
+            }
+
+            if (order.order_info) {
+                customerPhone.textContent = order.order_info.phone || 'Не вказано';
+                deliveryAddress.textContent = `${order.order_info.city || 'Не вказано'}, ${order.order_info.warehouse || 'Не вказано'}`;
+            }
+
+            // Зберігаємо дані замовлення
+            orderData = order;
+        }
+
+        function displayMockOrderData() {
+            // Мок дані для демо
+            const mockOrder = {
+                items: [
+                    { name: 'Омега-3 Преміум', emoji: '🐟', quantity: 1, price: 2.6 },
+                    { name: 'Вітамін D3 + K2', emoji: '☀️', quantity: 1, price: 2.6 }
+                ],
+                total_amount: 5.2,
+                order_info: {
+                    phone: '+380XXXXXXXXX',
+                    city: 'Київ',
+                    warehouse: 'Відділення №1'
+                }
+            };
+
+            displayOrderData(mockOrder);
+        }
+
+        // Конфетті анімація
+        function startConfetti() {
+            const confettiContainer = document.getElementById('confetti');
+            const colors = ['#4CAF50', '#2196F3', '#ff9800', '#9c27b0', '#f44336'];
+
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    createConfettiPiece(confettiContainer, colors);
+                }, i * 100);
+            }
+        }
+
+        function createConfettiPiece(container, colors) {
+            const piece = document.createElement('div');
+            piece.className = 'confetti-piece';
+            piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            piece.style.left = Math.random() * 100 + '%';
+            piece.style.animationDelay = Math.random() * 2 + 's';
+            piece.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            
+            container.appendChild(piece);
+            
+            setTimeout(() => {
+                piece.remove();
+            }, 5000);
+        }
+
+        function stopConfetti() {
+            const confettiContainer = document.getElementById('confetti');
+            confettiContainer.innerHTML = '';
+        }
+
+        // Навігаційні функції
+        function goToShop() {
+            window.location.href = 'shop.html';
+        }
+
+        function goToSubscription() {
+            window.location.href = 'index.html';
+        }
+
+        function goToMain() {
+            window.location.href = 'index.html';
+        }
+
+        // Збереження контактних даних в localStorage для майбутніх замовлень
+        function saveContactData() {
+            if (orderData && orderData.order_info) {
+                localStorage.setItem('customer_phone', orderData.order_info.phone);
+                localStorage.setItem('customer_city', orderData.order_info.city);
+            }
+        }
+
+        // Автоматично зберігаємо дані
+        setTimeout(saveContactData, 2000);
+
+        // Додаємо анімацію появи елементів
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'slideIn 0.6s ease-out';
+                }
+            });
+        });
+
+        document.querySelectorAll('.order-details, .contact-info, .delivery-steps, .selling-text').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
