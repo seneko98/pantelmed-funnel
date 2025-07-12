@@ -1,34 +1,63 @@
-/* PantelMed - Стилі для pantelmed-funnel */
+/* PantelMed Platform - Повні стилі */
 
-/* Скидання стилів */
+/* ==============================================
+   БАЗОВІ СТИЛІ ТА РЕСЕТ
+   ============================================== */
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* Основний шрифт і фон */
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    padding: 20px;
-    color: #333;
-    line-height: 1.6;
+html {
+    scroll-behavior: smooth;
 }
 
-/* Контейнери */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+/* ==============================================
+   КОНТЕЙНЕРИ ТА LAYOUT
+   ============================================== */
+
 .container {
     max-width: 500px;
-    margin: 50px auto;
+    margin: 20px auto;
     background: white;
     border-radius: 20px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.1);
     overflow: hidden;
-    animation: slideIn 0.6s ease-out;
+    animation: slideInUp 0.6s ease-out;
 }
 
-@keyframes slideIn {
+.content {
+    padding: 30px;
+}
+
+.shop-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.checkout-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* ==============================================
+   АНІМАЦІЇ
+   ============================================== */
+
+@keyframes slideInUp {
     from {
         transform: translateY(30px);
         opacity: 0;
@@ -39,49 +68,253 @@ body {
     }
 }
 
-.content {
-    padding: 30px;
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
-/* Заголовки */
-h1, h2, h3 {
+@keyframes fadeInScale {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+@keyframes confetti-fall {
+    0% {
+        transform: translateY(-100vh) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+/* ==============================================
+   НАВІГАЦІЯ
+   ============================================== */
+
+.navigation {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 15px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.logo {
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.logo:hover {
+    transform: scale(1.05);
+}
+
+.nav-menu {
+    display: flex;
+    gap: 15px;
+}
+
+.nav-button {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.nav-button:hover {
+    background: rgba(255,255,255,0.3);
+    transform: translateY(-1px);
+}
+
+.nav-button.active {
+    background: rgba(255,255,255,0.3);
+    border-color: white;
+}
+
+/* ==============================================
+   ЗАГОЛОВКИ ТА ТЕКСТИ
+   ============================================== */
+
+h1, h2, h3, h4, h5, h6 {
     margin-bottom: 15px;
+    color: #333;
 }
 
 h1 {
     font-size: 28px;
+    font-weight: 700;
 }
 
 h2 {
-    color: #4CAF50;
-    text-align: center;
     font-size: 24px;
+    font-weight: 600;
+    text-align: center;
 }
 
 h3 {
-    font-size: 18px;
-    color: #333;
+    font-size: 20px;
+    font-weight: 600;
 }
 
-/* Головний хедер */
+h4 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+p {
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+strong {
+    font-weight: 600;
+}
+
+small {
+    font-size: 0.85em;
+    color: #666;
+}
+
+/* ==============================================
+   ЗАГОЛОВКИ СЕКЦІЙ
+   ============================================== */
+
 .header {
     background: linear-gradient(135deg, #4CAF50, #45a049);
     color: white;
     padding: 30px;
     text-align: center;
+    border-radius: 20px 20px 0 0;
 }
 
 .header h1 {
     margin: 0 0 10px 0;
-    font-size: 24px;
+    color: white;
 }
 
 .header p {
     opacity: 0.9;
-    font-size: 16px;
+    margin: 0;
 }
 
-/* Кнопки */
+.shop-header {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.checkout-header {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.celebration-header {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    text-align: center;
+    padding: 40px 20px;
+    border-radius: 20px 20px 0 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.celebration-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(255,255,255,0.1) 10px,
+        rgba(255,255,255,0.1) 20px
+    );
+    animation: spin 20s linear infinite;
+}
+
+.celebration-emoji {
+    font-size: 80px;
+    margin-bottom: 20px;
+    animation: bounce 2s ease-in-out infinite;
+    position: relative;
+    z-index: 1;
+}
+
+.celebration-text {
+    position: relative;
+    z-index: 1;
+}
+
+/* ==============================================
+   КНОПКИ
+   ============================================== */
+
 button, .btn {
     padding: 12px 24px;
     font-size: 16px;
@@ -94,6 +327,9 @@ button, .btn {
     display: inline-block;
     text-align: center;
     font-family: inherit;
+    background: #4CAF50;
+    color: white;
+    border: none;
 }
 
 button:hover:not(:disabled), .btn:hover {
@@ -147,24 +383,137 @@ button:disabled {
     background: #f57c00;
 }
 
-.btn-reset {
+.btn-danger {
+    background: #f44336;
+    color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: #d32f2f;
+}
+
+.btn-success {
+    background: #4CAF50;
+    color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+    background: #45a049;
+}
+
+.btn-back {
+    background: #6c757d;
+    color: white;
+    flex: 1;
+}
+
+.btn-continue {
+    background: #4CAF50;
+    color: white;
+    flex: 2;
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-submit:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+}
+
+.btn-submit:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.copy-address-btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.link-btn {
+    background: none;
+    border: none;
+    color: #2196F3;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: inherit;
+    padding: 0;
+    margin: 0;
+}
+
+.regenerate-btn {
     background: #ff9800;
     color: white;
     padding: 8px 16px;
     font-size: 14px;
 }
 
-.btn-reset:hover:not(:disabled) {
+.regenerate-btn:hover:not(:disabled) {
     background: #f57c00;
 }
 
-/* Картки та секції */
+/* ==============================================
+   КАРТКИ ТА СЕКЦІЇ
+   ============================================== */
+
 .status-card {
     background: #f8f9fa;
     padding: 20px;
     border-radius: 12px;
     margin: 20px 0;
     text-align: center;
+    transition: all 0.3s ease;
+}
+
+.status-card.success { 
+    background: #e8f5e9; 
+    border-left: 4px solid #4CAF50; 
+}
+
+.status-card.warning { 
+    background: #fff3e0; 
+    border-left: 4px solid #ff9800; 
+}
+
+.status-card.error { 
+    background: #ffebee; 
+    border-left: 4px solid #f44336; 
+}
+
+.status-card.info { 
+    background: #e3f2fd; 
+    border-left: 4px solid #2196F3; 
 }
 
 .payment-section {
@@ -207,87 +556,434 @@ button:disabled {
     border-left: 4px solid #4CAF50;
 }
 
-.reset-section {
-    background: #fff3e0;
-    padding: 15px;
-    border-radius: 8px;
+.contact-info {
+    background: #e3f2fd;
+    padding: 20px;
+    border-radius: 12px;
     margin: 20px 0;
-    border-left: 4px solid #ff9800;
+    border-left: 4px solid #2196F3;
 }
 
-.wallet-section {
-    margin: 25px 0;
-}
-
-.countdown {
-    background: #fff3e0;
-    padding: 15px;
-    border-radius: 8px;
+.order-details {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
     margin: 20px 0;
-    border-left: 4px solid #ff9800;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-left: 4px solid #4CAF50;
 }
 
-.next-steps {
-    margin-top: 30px;
-    padding-top: 30px;
-    border-top: 2px solid #f0f0f0;
-}
-
-/* Тестовий банер */
-.test-banner {
-    background: #fff3e0;
-    padding: 15px;
-    border-radius: 8px;
-    margin: 20px 0;
-    border-left: 4px solid #ff9800;
+.selling-text {
+    background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+    padding: 25px;
+    border-radius: 15px;
+    margin: 30px 0;
+    border-left: 4px solid #4CAF50;
     text-align: center;
+}
+
+.selling-text h3 {
+    color: #2e7d32;
+    margin-bottom: 15px;
+}
+
+.selling-text p {
+    color: #388e3c;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.team-signature {
+    background: #fff3e0;
+    padding: 20px;
+    border-radius: 12px;
+    margin: 20px 0;
+    text-align: center;
+    border-left: 4px solid #ff9800;
+    font-style: italic;
+}
+
+/* ==============================================
+   МАГАЗИН КОМПОНЕНТИ
+   ============================================== */
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.product-card {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    border-color: #4CAF50;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.product-image {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    margin: 0 auto 15px;
+}
+
+.product-title {
+    font-size: 18px;
     font-weight: bold;
-    color: #f57c00;
+    color: #333;
+    text-align: center;
+    margin-bottom: 10px;
 }
 
-/* Кольорові стани */
-.success { 
-    background: #e8f5e9; 
-    border-left: 4px solid #4CAF50; 
+.product-description {
+    color: #666;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 15px;
+    line-height: 1.5;
 }
 
-.warning { 
-    background: #fff3e0; 
-    border-left: 4px solid #ff9800; 
-}
-
-.error { 
-    background: #ffebee; 
-    border-left: 4px solid #f44336; 
-}
-
-/* Статус повідомлення */
-.status-message {
-    padding: 15px;
+.product-benefits {
+    background: #f8f9fa;
+    padding: 10px;
     border-radius: 8px;
-    margin: 15px 0;
+    margin-bottom: 15px;
+}
+
+.product-benefits ul {
+    margin: 0;
+    padding-left: 15px;
+    font-size: 13px;
+    color: #555;
+}
+
+.product-price {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.price-amount {
+    font-size: 24px;
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+.price-crypto {
+    font-size: 14px;
+    color: #666;
+}
+
+.add-to-cart-btn {
+    width: 100%;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.add-to-cart-btn:hover {
+    background: #45a049;
+}
+
+.add-to-cart-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* ==============================================
+   КОШИК
+   ============================================== */
+
+.cart-section {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    position: sticky;
+    top: 100px;
+}
+
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.cart-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+.cart-count {
+    background: #4CAF50;
+    color: white;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.cart-items {
+    margin-bottom: 20px;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.cart-item:last-child {
+    border-bottom: none;
+}
+
+.item-info {
+    flex-grow: 1;
+}
+
+.item-name {
+    font-weight: bold;
+    color: #333;
+}
+
+.item-price {
+    color: #666;
+    font-size: 14px;
+}
+
+.item-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.quantity-btn {
+    background: #f0f0f0;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease;
+}
+
+.quantity-btn:hover {
+    background: #e0e0e0;
+}
+
+.quantity {
+    font-weight: bold;
+    min-width: 20px;
     text-align: center;
 }
 
-.status-success { 
-    background: #d4edda; 
-    color: #155724; 
-    border: 1px solid #c3e6cb; 
+.cart-total {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
 }
 
-.status-error { 
-    background: #f8d7da; 
-    color: #721c24; 
-    border: 1px solid #f5c6cb; 
+.total-amount {
+    font-size: 24px;
+    font-weight: bold;
+    color: #4CAF50;
 }
 
-.status-warning { 
-    background: #fff3cd; 
-    color: #856404; 
-    border: 1px solid #ffeaa7; 
+.checkout-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-/* Гаманець та адреси */
+.checkout-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+}
+
+.checkout-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.empty-cart {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 20px 0;
+}
+
+/* ==============================================
+   ФОРМИ
+   ============================================== */
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+    font-family: inherit;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+.form-select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    background: white;
+    font-family: inherit;
+}
+
+.checkout-form {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    margin-top: 20px;
+    display: none;
+}
+
+.customer-info-form {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    display: none;
+}
+
+/* ==============================================
+   ПЛАТІЖНІ МЕТОДИ
+   ============================================== */
+
+.payment-methods {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.payment-method {
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.payment-method:hover {
+    border-color: #4CAF50;
+    background: #f8f9fa;
+}
+
+.payment-method.selected {
+    border-color: #4CAF50;
+    background: #e8f5e9;
+}
+
+.payment-method-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.payment-icon {
+    font-size: 24px;
+    margin-right: 15px;
+}
+
+.payment-title {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.payment-description {
+    color: #666;
+    font-size: 14px;
+    margin-left: 39px;
+}
+
+.crypto-payment-details {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 15px;
+    display: none;
+}
+
+/* ==============================================
+   ГАМАНЕЦЬ ТА АДРЕСИ
+   ============================================== */
+
 .wallet-address {
     background: #f5f5f5;
     padding: 15px;
@@ -300,8 +996,16 @@ button:disabled {
     position: relative;
 }
 
+.wallet-address-section {
+    background: #e8f5e9;
+    border: 2px dashed #4CAF50;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
 .user-id {
-    font-family: monospace;
+    font-family: 'Courier New', monospace;
     background: #f5f5f5;
     padding: 5px 8px;
     border-radius: 4px;
@@ -310,20 +1014,10 @@ button:disabled {
     word-break: break-all;
 }
 
-.copy-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-}
+/* ==============================================
+   ВИДІЛЕННЯ СУМА
+   ============================================== */
 
-/* Виділення суми */
 .amount-highlight {
     background: #e8f5e9;
     padding: 15px;
@@ -339,7 +1033,23 @@ button:disabled {
     color: #4CAF50;
 }
 
-/* Кроки */
+.total-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.total-crypto {
+    color: #666;
+    margin-top: 5px;
+}
+
+/* ==============================================
+   КРОКИ ТА ПРОЦЕСИ
+   ============================================== */
+
 .steps {
     margin: 25px 0;
 }
@@ -367,20 +1077,65 @@ button:disabled {
     flex-shrink: 0;
 }
 
-/* Преміум контент */
+.payment-steps {
+    background: #fff3e0;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 15px;
+}
+
+.payment-steps .step-number {
+    background: #ff9800;
+    width: 25px;
+    height: 25px;
+    font-size: 12px;
+}
+
+.delivery-steps {
+    margin: 30px 0;
+}
+
+.delivery-step {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    margin: 10px 0;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border-left: 4px solid #ff9800;
+}
+
+.delivery-step .step-icon {
+    background: #ff9800;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+/* ==============================================
+   ПРЕМІУМ КОНТЕНТ
+   ============================================== */
+
 .premium-content {
     background: #e8f5e9;
     padding: 25px;
     border-radius: 12px;
     margin-top: 25px;
     display: none;
+    animation: fadeInScale 0.5s ease-out;
 }
 
 .premium-content.show {
     display: block;
 }
 
-/* Функції (features) */
 .features {
     text-align: left;
     margin: 30px 0;
@@ -391,10 +1146,17 @@ button:disabled {
     align-items: center;
     padding: 15px 0;
     border-bottom: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
 }
 
 .feature-item:last-child {
     border-bottom: none;
+}
+
+.feature-item:hover {
+    background: #f8f9fa;
+    padding-left: 10px;
+    border-radius: 8px;
 }
 
 .feature-icon {
@@ -413,9 +1175,228 @@ button:disabled {
 .feature-content p {
     color: #666;
     font-size: 14px;
+    margin: 0;
 }
 
-/* Списки */
+/* ==============================================
+   СТАТУСИ ТА БЕЙДЖІ
+   ============================================== */
+
+.status-message {
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    text-align: center;
+}
+
+.status-success { 
+    background: #d4edda; 
+    color: #155724; 
+    border: 1px solid #c3e6cb; 
+}
+
+.status-error { 
+    background: #f8d7da; 
+    color: #721c24; 
+    border: 1px solid #f5c6cb; 
+}
+
+.status-warning { 
+    background: #fff3cd; 
+    color: #856404; 
+    border: 1px solid #ffeaa7; 
+}
+
+.status-info { 
+    background: #d1ecf1; 
+    color: #0c5460; 
+    border: 1px solid #bee5eb; 
+}
+
+.order-type-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.badge-subscription {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.badge-supplements {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 600;
+}
+
+.status-active { 
+    background: #d4edda; 
+    color: #155724; 
+}
+
+.status-pending { 
+    background: #fff3cd; 
+    color: #856404; 
+}
+
+.status-failed { 
+    background: #f8d7da; 
+    color: #721c24; 
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.status-waiting { background: #ffc107; }
+.status-checking { background: #007bff; animation: pulse 1s infinite; }
+.status-success { background: #28a745; }
+.status-error { background: #dc3545; }
+
+/* ==============================================
+   СПЕЦІАЛЬНІ СЕКЦІЇ
+   ============================================== */
+
+.test-banner {
+    background: #fff3e0;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border-left: 4px solid #ff9800;
+    text-align: center;
+    font-weight: bold;
+    color: #f57c00;
+}
+
+.countdown {
+    background: #fff3e0;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border-left: 4px solid #ff9800;
+    text-align: center;
+}
+
+.order-id-section {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+    text-align: center;
+    border: 2px dashed #4CAF50;
+}
+
+.order-id {
+    font-family: 'Courier New', monospace;
+    font-size: 18px;
+    font-weight: bold;
+    color: #4CAF50;
+    margin: 10px 0;
+}
+
+.next-steps {
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 2px solid #f0f0f0;
+}
+
+.order-summary {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.summary-item:last-child {
+    border-bottom: none;
+    font-weight: bold;
+    font-size: 18px;
+    color: #4CAF50;
+}
+
+.item-details {
+    flex-grow: 1;
+}
+
+.checkout-actions {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.checkout-btn-container {
+    display: flex;
+    gap: 15px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin: 30px 0;
+    flex-wrap: wrap;
+}
+
+.btn-shop {
+    background: #4CAF50;
+    color: white;
+    flex: 1;
+    min-width: 200px;
+}
+
+.btn-subscription {
+    background: #ff9800;
+    color: white;
+    flex: 1;
+    min-width: 200px;
+}
+
+/* ==============================================
+   АНІМАЦІЇ УСПІХУ
+   ============================================== */
+
+.success-animation {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    animation: fadeInScale 0.5s ease-out;
+    color: white;
+}
+
+.success-animation .checkmark {
+    font-size: 60px;
+    margin-bottom: 20px;
+    animation: bounce 0.8s ease-out;
+}
+
+/* ==============================================
+   СПИСКИ
+   ============================================== */
+
 ul {
     padding-left: 20px;
 }
@@ -424,7 +1405,10 @@ li {
     margin: 8px 0;
 }
 
-/* Завантаження анімація */
+/* ==============================================
+   LOADING АНІМАЦІЇ
+   ============================================== */
+
 .loading {
     display: inline-block;
     width: 20px;
@@ -435,33 +1419,178 @@ li {
     animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+.progress-circle {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 20px;
+    border: 4px solid rgba(255,255,255,0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 2s linear infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
 }
 
-/* Анімація bounce */
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {
-        transform: translateY(0);
-    }
-    40% {
-        transform: translateY(-10px);
-    }
-    60% {
-        transform: translateY(-5px);
-    }
+.progress-text {
+    text-align: center;
 }
 
-/* Адаптивність для мобільних */
+.refresh-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+}
+
+/* ==============================================
+   СОЦІАЛЬНІ МЕРЕЖІ
+   ============================================== */
+
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 30px 0;
+}
+
+.social-link {
+    background: #f0f0f0;
+    padding: 15px;
+    border-radius: 50%;
+    text-decoration: none;
+    font-size: 24px;
+    transition: all 0.3s ease;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.social-link:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.social-link.telegram {
+    background: #0088cc;
+    color: white;
+}
+
+.social-link.viber {
+    background: #59267c;
+    color: white;
+}
+
+.social-link.whatsapp {
+    background: #25d366;
+    color: white;
+}
+
+/* ==============================================
+   КОНФЕТТІ
+   ============================================== */
+
+.confetti {
+    position: fixed;
+    top: -10px;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1000;
+}
+
+.confetti-piece {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #4CAF50;
+    animation: confetti-fall 3s linear infinite;
+}
+
+/* ==============================================
+   СПОВІЩЕННЯ
+   ============================================== */
+
+.notification-area {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.notification {
+    background: #007bff;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    animation: slideInRight 0.3s ease-out;
+}
+
+.notification-success { background: #28a745; }
+.notification-error { background: #dc3545; }
+.notification-warning { background: #ffc107; color: #333; }
+.notification-info { background: #17a2b8; }
+
+/* ==============================================
+   TELEGRAM ІНТЕГРАЦІЯ
+   ============================================== */
+
+.telegram-login-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 12px;
+    margin: 20px 0;
+    text-align: center;
+    border-left: 4px solid #0088cc;
+}
+
+.telegram-user-info {
+    background: #e3f2fd;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    border-left: 4px solid #2196F3;
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+    vertical-align: middle;
+}
+
+/* ==============================================
+   МОБІЛЬНА АДАПТАЦІЯ
+   ============================================== */
+
 @media (max-width: 768px) {
     body {
         padding: 10px;
     }
     
     .container {
-        margin: 20px auto;
+        margin: 10px auto;
         border-radius: 15px;
+    }
+    
+    .shop-container {
+        padding: 15px;
+    }
+    
+    .checkout-container {
+        padding: 15px;
     }
     
     .content {
@@ -472,12 +1601,49 @@ li {
         padding: 25px 20px;
     }
     
+    .nav-container {
+        flex-direction: column;
+        gap: 10px;
+        padding: 0 15px;
+    }
+    
+    .nav-menu {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .nav-button {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+    
     h1 {
         font-size: 22px;
     }
     
     h2 {
         font-size: 20px;
+    }
+    
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .checkout-btn-container {
+        flex-direction: column;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .action-buttons .btn {
+        min-width: auto;
+        width: 100%;
     }
     
     button, .btn {
@@ -515,11 +1681,30 @@ li {
         margin-top: 10px;
         width: 100%;
     }
+    
+    .celebration-emoji {
+        font-size: 60px;
+    }
+    
+    .social-links {
+        gap: 15px;
+    }
+    
+    .social-link {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+    
+    .cart-section {
+        position: static;
+        margin-bottom: 20px;
+    }
 }
 
 @media (max-width: 480px) {
     .container {
-        margin: 10px auto;
+        margin: 5px auto;
     }
     
     .content {
@@ -539,4 +1724,82 @@ li {
         height: 25px;
         font-size: 12px;
     }
+    
+    .total-amount {
+        font-size: 20px;
+    }
+    
+    .notification-area {
+        left: 10px;
+        right: 10px;
+        top: 10px;
+    }
+    
+    .notification {
+        margin-bottom: 5px;
+        padding: 12px 15px;
+    }
 }
+
+/* ==============================================
+   UTILITIES
+   ============================================== */
+
+.hidden {
+    display: none !important;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: 10px; }
+.mt-2 { margin-top: 20px; }
+.mt-3 { margin-top: 30px; }
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: 10px; }
+.mb-2 { margin-bottom: 20px; }
+.mb-3 { margin-bottom: 30px; }
+
+.p-0 { padding: 0; }
+.p-1 { padding: 10px; }
+.p-2 { padding: 20px; }
+.p-3 { padding: 30px; }
+
+.w-100 { width: 100%; }
+.h-100 { height: 100%; }
+
+.d-flex { display: flex; }
+.d-block { display: block; }
+.d-inline { display: inline; }
+.d-inline-block { display: inline-block; }
+.d-none { display: none; }
+
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.justify-around { justify-content: space-around; }
+
+.align-center { align-items: center; }
+.align-start { align-items: flex-start; }
+.align-end { align-items: flex-end; }
+
+.flex-col { flex-direction: column; }
+.flex-row { flex-direction: row; }
+
+.gap-1 { gap: 10px; }
+.gap-2 { gap: 20px; }
+.gap-3 { gap: 30px; }
+
+/* ==============================================
+   КІНЕЦЬ ФАЙЛУ
+   ============================================== */
