@@ -1,0 +1,344 @@
+# PantelMed Platform Docker Compose Configuration
+# Версія 3.8 для підтримки всіх функцій
+
+version: '3.8'
+
+# ==============================================
+# NETWORKS
+# ==============================================
+networks:
+  pantelmed-network:
+    driver: bridge
+    name: pantelmed-network
+
+# ==============================================
+# VOLUMES
+# ==============================================
+volumes:
+  # Локальні дані MongoDB (для development)
+  mongodb_data:
+    name: pantelmed_mongodb_data
+  
+  # Логи додатків
+  app_logs:
+    name: pantelmed_app_logs
+  
+  # Завантажені файли
+  uploads:
+    name: pantelmed_uploads
+  
+  # Redis дані (для кешування)
+  redis_data:
+    name: pantelmed_redis_data
+
+# ==============================================
+# SERVICES
+# ==============================================
+services:
+  
+  # ==============================================
+  # WEB PLATFORM (Main Flask App)
+  # ==============================================
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: pantelmed-web
+    restart: unless-stopped
+    
+    ports:
+      - "10000:10000"
+    
+    environment:
+      - FLASK_ENV=production
+      - PORT=10000
+      - MONGO_URI=${MONGO_URI}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_BOT_USERNAME=${TELEGRAM_BOT_USERNAME}
+      - ADMIN_TELEGRAM_ID=${ADMIN_TELEGRAM_ID}
+      - TRON_WALLET=${TRON_WALLET}
+      - MIN_AMOUNT=${MIN_AMOUNT:-2.6}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - PLATFORM_URL=${PLATFORM_URL:-http://localhost:10000}
+      - REDIS_URL=redis://redis:6379/0
+    
+    env_file:
+      - .env
+    
+    volumes:
+      - app_logs:/app/logs
+      - uploads:/app/uploads
+    
+    networks:
+      - pantelmed-network
+    
+    depends_on:
+      - redis
+      # - mongodb  # Uncomment if using local MongoDB
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    labels:
+      - "com.pantelmed.service=web"
+      - "com.pantelmed.description=Main web platform"
+
+  # ==============================================
+  # TELEGRAM BOT
+  # ==============================================
+  telegram-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: telegram-bot
+    container_name: pantelmed-telegram-bot
+    restart: unless-stopped
+    
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - PLATFORM_URL=${PLATFORM_URL:-http://web:10000}
+      - ADMIN_TELEGRAM_ID=${ADMIN_TELEGRAM_ID}
+    
+    env_file:
+      - .env
+    
+    volumes:
+      - app_logs:/app/logs
+    
+    networks:
+      - pantelmed-network
+    
+    depends_on:
+      - web
+    
+    healthcheck:
+      test: ["CMD", "python", "-c", "import telegram; print('Bot OK')"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 30s
+    
+    labels:
+      - "com.pantelmed.service=telegram-bot"
+      - "com.pantelmed.description=Telegram bot service"
+
+  # ==============================================
+  # REDIS (Caching & Sessions)
+  # ==============================================
+  redis:
+    image: redis:7-alpine
+    container_name: pantelmed-redis
+    restart: unless-stopped
+    
+    ports:
+      - "6379:6379"
+    
+    volumes:
+      - redis_data:/data
+    
+    networks:
+      - pantelmed-network
+    
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    
+    labels:
+      - "com.pantelmed.service=redis"
+      - "com.pantelmed.description=Cache and session storage"
+
+  # ==============================================
+  # MONGODB (Local Development Only)
+  # ==============================================
+  mongodb:
+    image: mongo:6.0
+    container_name: pantelmed-mongodb
+    restart: unless-stopped
+    
+    # Закоментовано для production (використовуємо MongoDB Atlas)
+    # Розкоментуйте для локальної розробки
+    profiles:
+      - development
+    
+    ports:
+      - "27017:27017"
+    
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=pantelmed123
+      - MONGO_INITDB_DATABASE=pantelmed
+    
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    
+    networks:
+      - pantelmed-network
+    
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    
+    labels:
+      - "com.pantelmed.service=mongodb"
+      - "com.pantelmed.description=Database for development"
+
+  # ==============================================
+  # NGINX (Reverse Proxy & Load Balancer)
+  # ==============================================
+  nginx:
+    image: nginx:alpine
+    container_name: pantelmed-nginx
+    restart: unless-stopped
+    
+    # Закоментовано для простого розгортання
+    # Розкоментуйте для production з SSL
+    profiles:
+      - production-nginx
+    
+    ports:
+      - "80:80"
+      - "443:443"
+    
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - app_logs:/var/log/nginx
+    
+    networks:
+      - pantelmed-network
+    
+    depends_on:
+      - web
+    
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    
+    labels:
+      - "com.pantelmed.service=nginx"
+      - "com.pantelmed.description=Reverse proxy and load balancer"
+
+  # ==============================================
+  # MONITORING (Prometheus - Optional)
+  # ==============================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: pantelmed-prometheus
+    restart: unless-stopped
+    
+    profiles:
+      - monitoring
+    
+    ports:
+      - "9090:9090"
+    
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    
+    networks:
+      - pantelmed-network
+    
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    
+    labels:
+      - "com.pantelmed.service=prometheus"
+      - "com.pantelmed.description=Metrics collection"
+
+  # ==============================================
+  # GRAFANA (Dashboards - Optional)
+  # ==============================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: pantelmed-grafana
+    restart: unless-stopped
+    
+    profiles:
+      - monitoring
+    
+    ports:
+      - "3000:3000"
+    
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=pantelmed123
+    
+    volumes:
+      - ./grafana:/etc/grafana/provisioning
+    
+    networks:
+      - pantelmed-network
+    
+    depends_on:
+      - prometheus
+    
+    labels:
+      - "com.pantelmed.service=grafana"
+      - "com.pantelmed.description=Metrics visualization"
+
+# ==============================================
+# DEVELOPMENT OVERRIDE
+# ==============================================
+# Для запуску в режимі розробки:
+# docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+# ==============================================
+# PRODUCTION CONFIGURATION
+# ==============================================
+# Для production:
+# 1. Використовуйте MongoDB Atlas замість локального MongoDB
+# 2. Налаштуйте SSL сертифікати для Nginx
+# 3. Встановіть правильні змінні середовища
+# 4. Використовуйте Docker Swarm або Kubernetes для масштабування
+
+# ==============================================
+# USEFUL COMMANDS
+# ==============================================
+
+# Запуск всіх сервісів:
+# docker-compose up -d
+
+# Запуск тільки основних сервісів:
+# docker-compose up -d web telegram-bot redis
+
+# Запуск з локальною базою даних:
+# docker-compose --profile development up -d
+
+# Запуск з моніторингом:
+# docker-compose --profile monitoring up -d
+
+# Перегляд логів:
+# docker-compose logs -f web
+# docker-compose logs -f telegram-bot
+
+# Масштабування web сервісу:
+# docker-compose up -d --scale web=3
+
+# Зупинка всіх сервісів:
+# docker-compose down
+
+# Зупинка з видаленням volumes:
+# docker-compose down -v
+
+# Перебудова образів:
+# docker-compose build --no-cache
+
+# Оновлення сервісів:
+# docker-compose pull && docker-compose up -d
