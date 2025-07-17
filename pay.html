@@ -122,7 +122,7 @@
             color: #666;
         }
         
-        .payment-methods {
+        .payment-section {
             background: white;
             padding: 25px;
             border-radius: 15px;
@@ -130,53 +130,11 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         
-        .payment-method {
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .payment-method:hover {
-            border-color: #4CAF50;
-            background: #f8f9fa;
-        }
-        
-        .payment-method.selected {
-            border-color: #4CAF50;
-            background: #e8f5e9;
-        }
-        
-        .payment-method-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        
-        .payment-icon {
-            font-size: 24px;
-            margin-right: 15px;
-        }
-        
-        .payment-title {
-            font-weight: bold;
-            font-size: 16px;
-        }
-        
-        .payment-description {
-            color: #666;
-            font-size: 14px;
-            margin-left: 39px;
-        }
-        
         .crypto-payment-details {
             background: #f8f9fa;
             padding: 20px;
             border-radius: 10px;
             margin-top: 15px;
-            display: none;
         }
         
         .wallet-address-section {
@@ -214,7 +172,6 @@
             border-radius: 15px;
             margin-bottom: 20px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            display: none;
         }
         
         .form-row {
@@ -295,12 +252,6 @@
             flex: 1;
         }
         
-        .btn-continue {
-            background: #4CAF50;
-            color: white;
-            flex: 2;
-        }
-        
         .btn-submit {
             background: linear-gradient(135deg, #4CAF50, #45a049);
             color: white;
@@ -353,6 +304,21 @@
             flex-shrink: 0;
         }
         
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
         /* Мобільна адаптація */
         @media (max-width: 768px) {
             .checkout-container {
@@ -394,7 +360,7 @@
                 <!-- Буде заповнено JavaScript -->
             </div>
             <h1>💳 Оформлення замовлення</h1>
-            <p id="checkout-description">Підтвердіть деталі та оберіть спосіб оплати</p>
+            <p id="checkout-description">Підтвердіть деталі та здійсніть оплату</p>
         </div>
 
         <!-- Резюме замовлення -->
@@ -405,58 +371,8 @@
             </div>
         </div>
 
-        <!-- Способи оплати -->
-        <div class="payment-methods">
-            <h3>💳 Спосіб оплати</h3>
-            
-            <!-- Криптовалюта -->
-            <div class="payment-method" id="crypto-method" onclick="selectPaymentMethod('crypto')">
-                <div class="payment-method-header">
-                    <div class="payment-icon">₿</div>
-                    <div>
-                        <div class="payment-title">Криптовалюта (USDT)</div>
-                        <div class="payment-description">Миттєва оплата через TRC-20 мережу</div>
-                    </div>
-                </div>
-                
-                <div class="crypto-payment-details" id="crypto-details">
-                    <div class="wallet-address-section">
-                        <strong>💰 Адреса для оплати:</strong>
-                        <div class="wallet-address" id="wallet-address">TQeHa8VdwfyybxtioW4ggbnDC1rbWe8nFa</div>
-                        <button class="copy-address-btn" onclick="copyWalletAddress()">📋 Скопіювати адресу</button>
-                    </div>
-                    
-                    <div class="payment-steps">
-                        <div class="step">
-                            <div class="step-number">1</div>
-                            <div>Скопіюйте адресу гаманця</div>
-                        </div>
-                        <div class="step">
-                            <div class="step-number">2</div>
-                            <div>Надішліть USDT через TRC-20 мережу</div>
-                        </div>
-                        <div class="step">
-                            <div class="step-number">3</div>
-                            <div>Система автоматично підтвердить платіж</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Оплата при отриманні (тільки для БАДів) -->
-            <div class="payment-method" id="cod-method" onclick="selectPaymentMethod('cod')" style="display: none;">
-                <div class="payment-method-header">
-                    <div class="payment-icon">📦</div>
-                    <div>
-                        <div class="payment-title">Оплата при отриманні</div>
-                        <div class="payment-description">Сплачуйте готівкою або карткою в відділенні Нової Пошти</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Інформація про клієнта (для БАДів) -->
-        <div class="customer-info-form" id="customer-info-form">
+        <!-- Інформація про клієнта (тільки для БАДів) -->
+        <div class="customer-info-form" id="customer-info-form" style="display: none;">
             <h3>📞 Контактна інформація</h3>
             
             <form id="checkout-form">
@@ -508,6 +424,38 @@
             </form>
         </div>
 
+        <!-- Способи оплати -->
+        <div class="payment-section">
+            <h3>💳 Оплата USDT</h3>
+            
+            <div class="crypto-payment-details">
+                <div class="wallet-address-section">
+                    <strong>💰 Адреса для оплати:</strong>
+                    <div class="wallet-address" id="wallet-address">TQeHa8VdwfyybxtioW4ggbnDC1rbWe8nFa</div>
+                    <button class="copy-address-btn" onclick="copyWalletAddress()">📋 Скопіювати адресу</button>
+                </div>
+                
+                <div class="payment-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div>Скопіюйте адресу гаманця</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div>Надішліть точну суму USDT через TRC-20 мережу</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div>Натисніть "Я оплатив" після відправки</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div>Система автоматично підтвердить платіж</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Дії -->
         <div class="checkout-actions">
             <div class="total-section">
@@ -520,7 +468,7 @@
                     ◀️ Назад
                 </button>
                 <button class="btn-submit" id="submit-btn" onclick="processOrder()">
-                    🚀 Підтвердити замовлення
+                    ✅ Я оплатив
                 </button>
             </div>
         </div>
@@ -528,10 +476,9 @@
 
     <script>
         // Глобальні змінні
-        const API_BASE = window.location.origin;
+        const API_BASE = 'https://pantelmed-api.onrender.com';
         let orderData = null;
         let orderType = null; // 'subscription' або 'supplements'
-        let selectedPaymentMethod = null;
         let currentTelegramUser = null;
         let userId = null;
 
@@ -552,7 +499,7 @@
             displayOrderSummary();
             
             // Налаштовуємо форму залежно від типу
-            setupPaymentMethods();
+            setupFormVisibility();
             
             // Заповнюємо дані з Telegram
             fillTelegramUserData();
@@ -566,26 +513,28 @@
             
             if (orderType === 'supplements') {
                 // Дані з магазину БАДів
-                const cartData = localStorage.getItem('cart_data');
+                const cartData = localStorage.getItem('supplements_cart');
                 if (cartData) {
                     orderData = JSON.parse(cartData);
                 } else {
-                    // Тестові дані
+                    // Fallback дані
                     orderData = {
                         items: [
-                            { name: 'Омега-3 Преміум', emoji: '🐟', quantity: 1, price: 2.6 }
+                            { name: 'Тестове замовлення БАДів', emoji: '💊', quantity: 1, price: 2.6 }
                         ],
-                        total: 2.6
+                        total_amount: 2.6
                     };
                 }
             } else {
                 // Підписка
+                const concern = urlParams.get('concern') || 'general';
                 orderData = {
                     type: 'subscription',
                     name: 'Медична підписка PantelMed',
                     description: 'Доступ до преміум контенту на 30 днів',
                     price: 2.6,
-                    duration: '30 днів'
+                    duration: '30 днів',
+                    concern: concern
                 };
             }
             
@@ -665,7 +614,7 @@
             
             if (orderType === 'supplements') {
                 orderTypeBadge.className = 'order-type-badge badge-supplements';
-                orderTypebadge.textContent = '🛒 Замовлення БАДів';
+                orderTypeBadge.textContent = '🛒 Замовлення БАДів';
                 
                 orderData.items.forEach(item => {
                     const itemTotal = item.price * item.quantity;
@@ -709,52 +658,16 @@
             totalCrypto.textContent = `${total.toFixed(1)} USDT`;
         }
 
-        function setupPaymentMethods() {
-            const codMethod = document.getElementById('cod-method');
+        function setupFormVisibility() {
             const customerForm = document.getElementById('customer-info-form');
             
             if (orderType === 'supplements') {
-                // Показуємо оплату при отриманні для БАДів
-                codMethod.style.display = 'block';
-                selectPaymentMethod('cod'); // За замовчуванням
+                // Показуємо форму доставки для БАДів
+                customerForm.style.display = 'block';
             } else {
-                // Тільки криптовалюта для підписки
-                selectPaymentMethod('crypto');
+                // Приховуємо для підписки
+                customerForm.style.display = 'none';
             }
-        }
-
-        function selectPaymentMethod(method) {
-            selectedPaymentMethod = method;
-            
-            // Скидаємо вибір
-            document.querySelectorAll('.payment-method').forEach(el => {
-                el.classList.remove('selected');
-            });
-            
-            // Приховуємо деталі
-            document.getElementById('crypto-details').style.display = 'none';
-            document.getElementById('customer-info-form').style.display = 'none';
-            
-            if (method === 'crypto') {
-                document.getElementById('crypto-method').classList.add('selected');
-                document.getElementById('crypto-details').style.display = 'block';
-                
-                if (orderType === 'supplements') {
-                    document.getElementById('customer-info-form').style.display = 'block';
-                }
-                
-                updateSubmitButton('Оплатити криптовалютою');
-                
-            } else if (method === 'cod') {
-                document.getElementById('cod-method').classList.add('selected');
-                document.getElementById('customer-info-form').style.display = 'block';
-                
-                updateSubmitButton('Оформити замовлення');
-            }
-        }
-
-        function updateSubmitButton(text) {
-            document.getElementById('submit-btn').textContent = text;
         }
 
         function setupEventListeners() {
@@ -789,49 +702,60 @@
         async function processOrder() {
             const submitBtn = document.getElementById('submit-btn');
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="loading"></span> Обробка...';
+            submitBtn.innerHTML = '<span class="loading"></span> Перевіряємо...';
 
             try {
-                if (selectedPaymentMethod === 'crypto') {
-                    await processCryptoPayment();
-                } else if (selectedPaymentMethod === 'cod') {
-                    await processCODOrder();
+                if (orderType === 'supplements') {
+                    await processSupplementsOrder();
+                } else {
+                    await processSubscriptionOrder();
                 }
             } catch (error) {
                 console.error('Order processing error:', error);
                 alert('❌ Помилка при обробці замовлення. Спробуйте ще раз.');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = selectedPaymentMethod === 'crypto' ? 
-                    'Оплатити криптовалютою' : 'Оформити замовлення';
+                submitBtn.innerHTML = '✅ Я оплатив';
             }
         }
 
-        async function processCryptoPayment() {
-            if (orderType === 'subscription') {
-                // Підписка - перенаправляємо на автоматичне відстеження
-                window.location.href = `index.html?auto_payment=true&user_id=${userId}`;
+        async function processSubscriptionOrder() {
+            // Перевірка підписки через існуючий endpoint
+            const response = await fetch(`${API_BASE}/check-payment`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    user_id: userId,
+                    auto_check: false
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.access === "granted") {
+                // Успішна оплата підписки
+                const concern = orderData.concern || 'general';
+                window.location.href = `thankyou.html?user_id=${userId}&concern=${concern}&days_left=${result.subscription?.days_left || 30}`;
             } else {
-                // БАДи з криптооплатою - поки що функція не реалізована
-                alert('💡 Криптооплата для БАДів буде додана в наступному оновленні. Оберіть "Оплата при отриманні".');
+                alert('❌ Платіж не знайдено. Переконайтеся, що ви надіслали точну суму USDT на вказану адресу.');
             }
         }
 
-        async function processCODOrder() {
-            // Валідація форми
+        async function processSupplementsOrder() {
+            // Валідація форми доставки
             const form = document.getElementById('checkout-form');
             if (!form.checkValidity()) {
                 form.reportValidity();
                 return;
             }
 
-            // Збираємо дані
+            // Збираємо дані замовлення
             const city = document.getElementById('city').value;
             const orderRequestData = {
                 user_id: userId,
                 telegram_user: currentTelegramUser,
                 items: orderData.items,
-                total_amount: orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                total_amount: orderData.total_amount,
                 order_info: {
                     first_name: document.getElementById('first-name').value,
                     last_name: document.getElementById('last-name').value,
@@ -840,42 +764,56 @@
                     warehouse: document.getElementById('warehouse').value,
                     comment: document.getElementById('comment').value
                 },
-                payment_method: 'cash_on_delivery',
+                payment_method: 'usdt_crypto',
                 source: 'checkout'
             };
 
-            // Створюємо замовлення
-            const response = await fetch(`${API_BASE}/api/create-order`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(orderRequestData)
-            });
-
-            const result = await response.json();
-
-            if (result.status === 'created') {
-                // Відправляємо сповіщення
-                await sendOrderNotification(orderRequestData);
-                
-                // Очищаємо кошик
-                localStorage.removeItem('cart_data');
-                
-                // Перенаправляємо
-                window.location.href = `thankyou_supplements.html?order_id=${result.order_id}`;
-            } else {
-                throw new Error(result.error || 'Помилка створення замовлення');
-            }
-        }
-
-        async function sendOrderNotification(orderData) {
             try {
-                await fetch(`${API_BASE}/api/order-notification`, {
+                // Створюємо замовлення спочатку
+                const createResponse = await fetch(`${API_BASE}/api/create-order`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ order: orderData })
+                    body: JSON.stringify(orderRequestData)
                 });
+
+                const createResult = await createResponse.json();
+
+                if (createResult.status !== 'created') {
+                    throw new Error(createResult.error || 'Помилка створення замовлення');
+                }
+
+                const orderId = createResult.order_id;
+                console.log(`✅ Order created: ${orderId}`);
+
+                // Тепер перевіряємо оплату БАДів
+                const paymentResponse = await fetch(`${API_BASE}/check-supplements-payment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        order_id: orderId,
+                        expected_amount: orderData.total_amount
+                    })
+                });
+
+                const paymentResult = await paymentResponse.json();
+
+                if (paymentResult.access === "granted") {
+                    // Успішна оплата БАДів
+                    console.log(`✅ Payment confirmed for order: ${orderId}`);
+                    
+                    // Очищаємо кошик
+                    localStorage.removeItem('supplements_cart');
+                    
+                    // Перенаправляємо на thankyou
+                    window.location.href = `thankyou_supplements.html?order_id=${orderId}`;
+                } else {
+                    alert(`❌ ${paymentResult.message || 'Платіж не знайдено. Переконайтеся, що ви надіслали точну суму USDT.'}`);
+                }
+
             } catch (error) {
-                console.error('Notification error:', error);
+                console.error('Supplements order processing error:', error);
+                alert('❌ Помилка при обробці замовлення: ' + error.message);
             }
         }
 
@@ -886,28 +824,6 @@
                 window.location.href = 'index.html';
             }
         }
-
-        // Додаємо завантаження анімацію
-        const loadingStyle = `
-            .loading {
-                display: inline-block;
-                width: 20px;
-                height: 20px;
-                border: 3px solid #f3f3f3;
-                border-top: 3px solid #4CAF50;
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-            }
-            
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        `;
-        
-        const styleSheet = document.createElement('style');
-        styleSheet.textContent = loadingStyle;
-        document.head.appendChild(styleSheet);
     </script>
 </body>
 </html>
