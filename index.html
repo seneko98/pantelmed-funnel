@@ -59,26 +59,118 @@
             border-color: white;
         }
         
-        /* Мобільна адаптація */
-        @media (max-width: 480px) {
-            .nav-container {
-                flex-direction: column;
-                gap: 10px;
-                padding: 0 15px;
-            }
-            
-            .nav-menu {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .nav-button {
-                font-size: 12px;
-                padding: 6px 12px;
-            }
+        /* Медичний квіз */
+        .medical-quiz {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #4CAF50;
         }
         
-        /* Telegram Login Widget стилі */
+        .quiz-question {
+            margin-bottom: 20px;
+        }
+        
+        .quiz-options {
+            display: grid;
+            gap: 12px;
+            margin: 15px 0;
+        }
+        
+        .quiz-option {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .quiz-option:hover {
+            border-color: #4CAF50;
+            background: #f0f8f0;
+        }
+        
+        .quiz-option.selected {
+            border-color: #4CAF50;
+            background: #e8f5e9;
+        }
+        
+        .quiz-option input[type="radio"] {
+            margin: 0;
+        }
+        
+        .quiz-result {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid #2196F3;
+            display: none;
+        }
+        
+        .quiz-result.show {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .upgrade-offer {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .upgrade-offer h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+        
+        .upgrade-offer .price {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        
+        .upgrade-features {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .upgrade-features ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .upgrade-features li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .upgrade-features li::before {
+            content: "✅";
+            font-size: 16px;
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Telegram Login */
         .telegram-login-section {
             background: #f8f9fa;
             padding: 20px;
@@ -103,6 +195,44 @@
             margin-right: 15px;
             vertical-align: middle;
         }
+        
+        /* Статус підписки */
+        .subscription-status {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .status-active {
+            border-left: 4px solid #4CAF50;
+            background: #e8f5e9;
+        }
+        
+        .status-inactive {
+            border-left: 4px solid #ff9800;
+            background: #fff3e0;
+        }
+        
+        /* Мобільна адаптація */
+        @media (max-width: 480px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 10px;
+                padding: 0 15px;
+            }
+            
+            .nav-menu {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .nav-button {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -114,7 +244,7 @@
                 <a href="#" class="nav-button active" onclick="showSubscription()">
                     💊 Підписка
                 </a>
-                <a href="shop.html" class="nav-button" onclick="showShop()">
+                <a href="shop.html" class="nav-button">
                     🛒 PantelMed Shop
                 </a>
             </div>
@@ -124,7 +254,7 @@
     <div class="container">
         <div class="header">
             <h1>🏥 PantelMed</h1>
-            <p>Розширений доступ до медичних рекомендацій</p>
+            <p>Персональні медичні рекомендації на основі ваших потреб</p>
         </div>
         
         <div class="content">
@@ -136,6 +266,99 @@
                 <div id="telegram-user-info" class="telegram-user-info" style="display: none;"></div>
             </div>
             
+            <!-- Статус підписки -->
+            <div id="subscription-status" class="subscription-status">
+                <h3>📊 Статус підписки</h3>
+                <div id="status-content">🔍 Перевіряємо ваш статус...</div>
+            </div>
+            
+            <!-- Медичний квіз -->
+            <div class="medical-quiz">
+                <h3>🩺 Швидка оцінка вашого стану здоров'я</h3>
+                <p>Відповідь на це питання допоможе нам дати вам персональні рекомендації</p>
+                
+                <div class="quiz-question">
+                    <h4>Які проблеми зі здоров'ям вас найбільше турбують?</h4>
+                    
+                    <div class="quiz-options">
+                        <label class="quiz-option" onclick="selectQuizOption('energy')">
+                            <input type="radio" name="health_concern" value="energy">
+                            <div>
+                                <strong>⚡ Низька енергія та втома</strong><br>
+                                <small>Швидко втомлююся, відчуваю апатію, не вистачає сил</small>
+                            </div>
+                        </label>
+                        
+                        <label class="quiz-option" onclick="selectQuizOption('immunity')">
+                            <input type="radio" name="health_concern" value="immunity">
+                            <div>
+                                <strong>🛡️ Слабкий імунітет</strong><br>
+                                <small>Часто хворію, довго одужую, підхоплюю все</small>
+                            </div>
+                        </label>
+                        
+                        <label class="quiz-option" onclick="selectQuizOption('stress')">
+                            <input type="radio" name="health_concern" value="stress">
+                            <div>
+                                <strong>😰 Стрес і проблеми зі сном</strong><br>
+                                <small>Постійний стрес, поганий сон, тривожність</small>
+                            </div>
+                        </label>
+                        
+                        <label class="quiz-option" onclick="selectQuizOption('weight')">
+                            <input type="radio" name="health_concern" value="weight">
+                            <div>
+                                <strong>⚖️ Проблеми з вагою</strong><br>
+                                <small>Хочу схудати або набрати вагу, покращити обмін речовин</small>
+                            </div>
+                        </label>
+                        
+                        <label class="quiz-option" onclick="selectQuizOption('hormones')">
+                            <input type="radio" name="health_concern" value="hormones">
+                            <div>
+                                <strong>⚗️ Гормональні проблеми</strong><br>
+                                <small>Щитовидка, гормони статі, менструальний цикл</small>
+                            </div>
+                        </label>
+                        
+                        <label class="quiz-option" onclick="selectQuizOption('general')">
+                            <input type="radio" name="health_concern" value="general">
+                            <div>
+                                <strong>🎯 Загальне оздоровлення</strong><br>
+                                <small>Хочу покращити здоров'я в цілому, профілактика</small>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Результат квізу -->
+            <div id="quiz-result" class="quiz-result">
+                <h3>🎯 Ваші персональні рекомендації</h3>
+                <div id="result-content"></div>
+                
+                <!-- Пропозиція розширеної версії -->
+                <div class="upgrade-offer">
+                    <h3>🚀 Отримайте повну програму оздоровлення!</h3>
+                    
+                    <div class="upgrade-features">
+                        <ul>
+                            <li>Детальний стек добавок з точним дозуванням</li>
+                            <li>Персональний список аналізів для моніторингу</li>
+                            <li>Відео інструкції та роз'яснення</li>
+                            <li>AI інтерпретатор ваших результатів</li>
+                            <li>30 днів преміум доступу</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="price">💎 Тільки $2.60</div>
+                    
+                    <button class="btn-primary" onclick="goToUpgrade()" style="width: 100%; margin-top: 15px; background: rgba(255,255,255,0.2); border: 2px solid white;">
+                        🎯 Купити розширену версію
+                    </button>
+                </div>
+            </div>
+            
             <div class="user-info">
                 <strong>🆔 Ваш ID:</strong> <span class="user-id" id="userIdDisplay">Генерується...</span>
                 <div style="margin-top: 8px; font-size: 12px; color: #666;">
@@ -143,61 +366,47 @@
                 </div>
             </div>
             
-            <div id="statusCard" class="status-card">
-                <div id="statusContent">🔍 Перевіряємо ваш статус...</div>
-            </div>
-            
-            <div id="paymentSection" style="display: none;">
-                <div class="payment-section">
-                    <h3>💳 Оплата підписки</h3>
-                    
-                    <div class="amount-highlight">
-                        <div>Сума до оплати:</div>
-                        <div class="amount">2.6 USDT</div>
-                        <div>TRC-20 Network</div>
-                    </div>
-                    
-                    <div>
-                        <strong>💰 Адреса для оплати:</strong>
-                        <div class="wallet-address">
-                            TQeHa8VdwfyybxtioW4ggbnDC1rbWe8nFa
-                            <button class="copy-btn" onclick="copyWallet()">📋</button>
-                        </div>
-                    </div>
-                    
-                    <div class="steps">
-                        <div class="step">
-                            <div class="step-number">1</div>
-                            <div>Скопіюйте адресу гаманця вище</div>
-                        </div>
-                        <div class="step">
-                            <div class="step-number">2</div>
-                            <div>Надішліть 2.6 USDT (TRC-20) на цю адресу</div>
-                        </div>
-                        <div class="step">
-                            <div class="step-number">3</div>
-                            <div>Натисніть "Я оплатив" після відправки</div>
-                        </div>
-                    </div>
-                    
-                    <button id="checkPaymentBtn" class="btn-primary" onclick="checkPayment()">
-                        ✅ Я оплатив
-                    </button>
-                </div>
-            </div>
-            
-            <div id="premiumContent" class="premium-content">
-                <h3>🎉 Доступ відкрито!</h3>
+            <!-- Преміум контент (тільки для активних підписників) -->
+            <div id="premiumContent" class="premium-content" style="display: none;">
+                <h3>🎉 Преміум доступ активований!</h3>
                 <div id="subscriptionInfo" class="subscription-info"></div>
-                <ul>
-                    <li>📄 <strong>Стек добавок:</strong> Цинк, Магній, Омега-3, Вітамін D3</li>
-                    <li>🧪 <strong>Список аналізів:</strong> Тестостерон, TSH, Вітамін D, B12</li>
-                    <li>🎥 <strong>Відео матеріали:</strong> Інтерпретація результатів</li>
-                    <li>🧠 <strong>AI Інтерпретатор:</strong> Аналіз ваших результатів</li>
-                </ul>
+                
+                <div class="features">
+                    <div class="feature-item">
+                        <div class="feature-icon">📄</div>
+                        <div class="feature-content">
+                            <h3>Персональний стек добавок</h3>
+                            <p>Рекомендовані вітаміни та мінерали з точним дозуванням</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">🧪</div>
+                        <div class="feature-content">
+                            <h3>Індивідуальний список аналізів</h3>
+                            <p>Лабораторні дослідження для моніторингу здоров'я</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">🎥</div>
+                        <div class="feature-content">
+                            <h3>Відео інструкції</h3>
+                            <p>Детальні роз'яснення як інтерпретувати результати</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">🧠</div>
+                        <div class="feature-content">
+                            <h3>AI Інтерпретатор</h3>
+                            <p>Штучний інтелект для аналізу медичних показників</p>
+                        </div>
+                    </div>
+                </div>
                 
                 <button onclick="downloadContent()" class="btn-primary">
-                    📥 Завантажити матеріали
+                    📥 Завантажити персональні матеріали
                 </button>
             </div>
         </div>
@@ -205,11 +414,13 @@
 
     <script>
         // API Base URL
-        const API_BASE = window.location.origin;
+        const API_BASE = 'https://pantelmed-api.onrender.com';
         
         // Глобальні змінні
         let currentTelegramUser = null;
         let userId = null;
+        let selectedHealthConcern = null;
+        let hasActiveSubscription = false;
 
         // Telegram Web App ініціалізація
         function initTelegramWebApp() {
@@ -217,7 +428,6 @@
                 const tg = window.Telegram.WebApp;
                 tg.ready();
                 
-                // Отримуємо дані користувача
                 if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
                     const telegramUser = tg.initDataUnsafe.user;
                     handleTelegramLogin(telegramUser, 'webapp');
@@ -239,7 +449,6 @@
             document.getElementById('telegram-login-widget').appendChild(script);
         }
 
-        // Обробка авторизації через Telegram
         function onTelegramAuth(user) {
             handleTelegramLogin(user, 'widget');
         }
@@ -248,12 +457,9 @@
             try {
                 currentTelegramUser = telegramUser;
                 
-                // Відправляємо дані на сервер
                 const response = await fetch(`${API_BASE}/api/telegram-login`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         telegram_user: telegramUser,
                         source: source
@@ -266,8 +472,6 @@
                     userId = result.user_id;
                     showTelegramUserInfo(telegramUser);
                     document.getElementById('userIdDisplay').textContent = userId;
-                    
-                    // Перевіряємо статус підписки
                     checkSubscriptionStatus();
                 } else {
                     console.error('Telegram login failed:', result.error);
@@ -289,12 +493,87 @@
                 </div>
             `;
             userInfoDiv.style.display = 'block';
-            
-            // Приховуємо login widget
             document.getElementById('telegram-login-widget').style.display = 'none';
         }
 
-        // Стандартні функції (з оригінального коду)
+        // Медичний квіз
+        function selectQuizOption(concern) {
+            selectedHealthConcern = concern;
+            
+            // Оновлюємо візуальний вибір
+            document.querySelectorAll('.quiz-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            
+            // Показуємо результат
+            showQuizResult(concern);
+        }
+
+        function showQuizResult(concern) {
+            const resultDiv = document.getElementById('quiz-result');
+            const contentDiv = document.getElementById('result-content');
+            
+            const recommendations = {
+                energy: {
+                    title: "⚡ Боротьба з втомою та підвищення енергії",
+                    description: "Ваша проблема дуже поширена і часто пов'язана з дефіцитом ключових мікроелементів.",
+                    short_tips: ["Вітамін B12 для енергії", "Залізо при анемії", "Магній для м'язів", "Коензим Q10 для клітин"],
+                    limitation: "Це базові рекомендації. Для точної програми потрібна розширена версія."
+                },
+                immunity: {
+                    title: "🛡️ Зміцнення імунної системи",
+                    description: "Слабкий імунітет часто вказує на дефіцит цинку, вітаміну D та порушення мікрофлори.",
+                    short_tips: ["Вітамін D3 взимку", "Цинк при простудах", "Вітамін C щодня", "Пробіотики для кишечника"],
+                    limitation: "Для повної імунної програми потрібні конкретні дозування та аналізи."
+                },
+                stress: {
+                    title: "😰 Управління стресом та покращення сну",
+                    description: "Хронічний стрес виснажує надниркники та порушує баланс гормонів стресу.",
+                    short_tips: ["Магній перед сном", "Ашваганда від стресу", "Мелатонін для сну", "Вітаміни B від втоми"],
+                    limitation: "Стрес потребує індивідуального підходу з аналізами кортизолу."
+                },
+                weight: {
+                    title: "⚖️ Оптимізація ваги та метаболізму",
+                    description: "Проблеми з вагою часто пов'язані з гормональними порушеннями та повільним метаболізмом.",
+                    short_tips: ["L-карнітин для спалювання", "Хром для цукру", "Омега-3 для метаболізму", "Вітамін D для гормонів"],
+                    limitation: "Схуднення потребує аналізів щитовидки та інсуліну."
+                },
+                hormones: {
+                    title: "⚗️ Гормональний баланс",
+                    description: "Гормональний дисбаланс впливає на весь організм і потребує комплексного підходу.",
+                    short_tips: ["Вітамін D для гормонів", "Омега-3 для балансу", "Магній для жінок", "Цинк для чоловіків"],
+                    limitation: "Гормони потребують детальних аналізів та персонального протоколу."
+                },
+                general: {
+                    title: "🎯 Загальне оздоровлення та профілактика",
+                    description: "Профілактика - найкращий спосіб підтримати здоров'я на довгі роки.",
+                    short_tips: ["Мультивітаміни щодня", "Омега-3 для серця", "Вітамін D взимку", "Пробіотики для травлення"],
+                    limitation: "Для персональної програми потрібні базові аналізи."
+                }
+            };
+            
+            const rec = recommendations[concern];
+            
+            contentDiv.innerHTML = `
+                <h4>${rec.title}</h4>
+                <p>${rec.description}</p>
+                
+                <div style="background: #f0f8f0; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <strong>💊 Базові рекомендації:</strong>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        ${rec.short_tips.map(tip => `<li>${tip}</li>`).join('')}
+                    </ul>
+                    <div style="background: #fff3e0; padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 14px;">
+                        ⚠️ <strong>Обмеження:</strong> ${rec.limitation}
+                    </div>
+                </div>
+            `;
+            
+            resultDiv.classList.add('show');
+        }
+
+        // Функції користувача
         function generateUserId() {
             return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         }
@@ -312,145 +591,114 @@
             return storedUserId;
         }
 
-        // Елементи DOM
-        const statusCard = document.getElementById('statusCard');
-        const statusContent = document.getElementById('statusContent');
-        const paymentSection = document.getElementById('paymentSection');
-        const premiumContent = document.getElementById('premiumContent');
-        const checkPaymentBtn = document.getElementById('checkPaymentBtn');
-        const subscriptionInfo = document.getElementById('subscriptionInfo');
-
-        function showStatus(message, type = 'info') {
-            statusCard.className = `status-card ${type}`;
-            statusContent.innerHTML = message;
-        }
-
-        function copyWallet() {
-            const walletAddress = "TQeHa8VdwfyybxtioW4ggbnDC1rbWe8nFa";
-            navigator.clipboard.writeText(walletAddress).then(() => {
-                showStatus("📋 Адресу гаманця скопійовано!", "success");
-                setTimeout(() => checkSubscriptionStatus(), 2000);
-            }).catch(() => {
-                alert("❌ Не вдалося скопіювати адресу");
-            });
-        }
-
         async function checkSubscriptionStatus() {
             const currentUserId = getUserId();
             try {
                 const response = await fetch(`${API_BASE}/subscription-status`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: currentUserId })
                 });
 
                 const data = await response.json();
+                
+                const statusDiv = document.getElementById('subscription-status');
+                const statusContent = document.getElementById('status-content');
 
                 if (data.has_subscription && data.active) {
-                    showStatus("✅ У вас є активна підписка!", 'success');
-                    subscriptionInfo.innerHTML = `
+                    hasActiveSubscription = true;
+                    statusDiv.className = 'subscription-status status-active';
+                    statusContent.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="font-size: 48px;">✅</div>
+                            <div>
+                                <h4 style="margin: 0; color: #2e7d32;">Преміум підписка активна!</h4>
+                                <p style="margin: 5px 0; color: #388e3c;">
+                                    <strong>📅 До:</strong> ${new Date(data.expires_at).toLocaleDateString('uk-UA')} 
+                                    <strong>⏰ Залишилось:</strong> ${data.days_left} днів
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Показуємо преміум контент
+                    document.getElementById('premiumContent').style.display = 'block';
+                    document.getElementById('subscriptionInfo').innerHTML = `
                         <strong>📅 Активна до:</strong> ${new Date(data.expires_at).toLocaleDateString('uk-UA')}<br>
                         <strong>⏰ Залишилось:</strong> ${data.days_left} днів
                     `;
-                    premiumContent.classList.add('show');
-                    paymentSection.style.display = 'none';
                 } else {
-                    showStatus("🔒 Для доступу до преміум функцій потрібна підписка", 'warning');
-                    paymentSection.style.display = 'block';
-                    premiumContent.classList.remove('show');
+                    hasActiveSubscription = false;
+                    statusDiv.className = 'subscription-status status-inactive';
+                    statusContent.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="font-size: 48px;">🔒</div>
+                            <div>
+                                <h4 style="margin: 0; color: #f57c00;">Підписка неактивна</h4>
+                                <p style="margin: 5px 0; color: #ef6c00;">
+                                    Пройдіть медичний квіз та отримайте персональні рекомендації
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Приховуємо преміум контент
+                    document.getElementById('premiumContent').style.display = 'none';
                 }
             } catch (error) {
                 console.error('Error checking subscription:', error);
-                showStatus("⚠️ Помилка з'єднання з сервером. Показуємо форму оплати.", 'error');
-                paymentSection.style.display = 'block';
-            }
-        }
-
-        async function checkPayment() {
-            const currentUserId = getUserId();
-            checkPaymentBtn.disabled = true;
-            checkPaymentBtn.innerHTML = '<span class="loading"></span> Перевіряємо платіж...';
-
-            try {
-                const response = await fetch(`${API_BASE}/check-payment`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ user_id: currentUserId })
-                });
-
-                const data = await response.json();
-
-                if (data.access === "granted") {
-                    showStatus("🎉 Платіж знайдено! Підписка активована", 'success');
-                    
-                    if (data.subscription) {
-                        subscriptionInfo.innerHTML = `
-                            <strong>📅 Активна до:</strong> ${new Date(data.subscription.expires_at).toLocaleDateString('uk-UA')}<br>
-                            <strong>⏰ Залишилось:</strong> ${data.subscription.days_left} днів<br>
-                            <strong>💰 Сума платежу:</strong> ${data.transaction?.amount || '2.6'} USDT
-                        `;
-                    }
-                    
-                    premiumContent.classList.add('show');
-                    paymentSection.style.display = 'none';
-                } else {
-                    showStatus(`❌ ${data.message || 'Платіж не знайдений. Спробуйте через кілька хвилин.'}`, 'warning');
-                    checkPaymentBtn.disabled = false;
-                    checkPaymentBtn.innerHTML = "✅ Я оплатив";
-                }
-            } catch (error) {
-                console.error('Payment check error:', error);
-                showStatus("⚠️ Помилка при перевірці платежу", 'error');
-                checkPaymentBtn.disabled = false;
-                checkPaymentBtn.innerHTML = "✅ Я оплатив";
+                document.getElementById('status-content').innerHTML = `
+                    <div style="color: #666;">⚠️ Не вдалося перевірити статус підписки</div>
+                `;
             }
         }
 
         function downloadContent() {
-            alert("🚀 Функція завантаження буде додана в наступному оновленні!");
+            if (!hasActiveSubscription) {
+                alert("🔒 Спочатку активуйте підписку!");
+                return;
+            }
+            alert("📥 Функція завантаження буде додана в наступному оновленні!");
         }
 
         // Навігаційні функції
         function showSubscription() {
-            // Поточна сторінка (підписка)
             document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
             document.querySelector('.nav-button[onclick="showSubscription()"]').classList.add('active');
         }
 
-        function showShop() {
-            // Перехід до магазину
-            window.location.href = 'shop.html';
+        function goToUpgrade() {
+            if (hasActiveSubscription) {
+                alert("✅ У вас вже є активна підписка!");
+                return;
+            }
+            
+            // Перехід до оплати підписки з обраною проблемою
+            const concern = selectedHealthConcern || 'general';
+            window.location.href = `pay.html?type=subscription&user_id=${getUserId()}&concern=${concern}`;
         }
 
         // Ініціалізація при завантаженні
         document.addEventListener('DOMContentLoaded', () => {
             console.log('PantelMed ініціалізовано');
             
-            // Ініціалізуємо User ID
             const currentUserId = getUserId();
             document.getElementById('userIdDisplay').textContent = currentUserId;
             
-            // Ініціалізуємо Telegram
             initTelegramWebApp();
             
-            // Якщо немає WebApp, показуємо Login Widget
             setTimeout(() => {
                 if (!currentTelegramUser) {
                     initTelegramLoginWidget();
                 }
             }, 1000);
             
-            // Перевіряємо статус підписки
             checkSubscriptionStatus();
         });
 
         // Періодична перевірка статусу
         setInterval(() => {
-            if (document.visibilityState === 'visible' && paymentSection.style.display !== 'none') {
+            if (document.visibilityState === 'visible') {
                 console.log('Автоматична перевірка статусу...');
                 checkSubscriptionStatus();
             }
@@ -462,7 +710,6 @@
         const source = urlParams.get('source');
 
         if (telegramUserId && source === 'telegram') {
-            // Отримуємо дані користувача з сервера
             fetch(`${API_BASE}/api/telegram-user/${telegramUserId}`)
                 .then(response => response.json())
                 .then(data => {
