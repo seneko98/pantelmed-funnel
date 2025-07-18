@@ -1,5 +1,6 @@
-# PantelMed - Повна платформа з Telegram інтеграцією, платежами, БАДи магазином та CRM системою
-# app.py
+# ==============================================
+# ПОВНИЙ ВИПРАВЛЕНИЙ КОД app.py 
+# ==============================================
 
 from flask import Flask, jsonify, request, send_from_directory, render_template_string
 from flask_cors import CORS
@@ -322,7 +323,7 @@ def serve_admin():
                     document.getElementById('users-count').textContent = data.total_users || 0;
                     document.getElementById('orders-count').textContent = data.total_orders || 0;
                     document.getElementById('subscriptions-count').textContent = data.active_subscriptions || 0;
-                    document.getElementById('revenue-count').textContent = '$' + (data.total_revenue || 0).toFixed(2);
+                    document.getElementById('revenue-count').textContent = ' + (data.total_revenue || 0).toFixed(2);
                 })
                 .catch(error => console.error('Error loading stats:', error));
             
@@ -892,7 +893,7 @@ def admin_stats():
         total_revenue = 0
         active_subscriptions = 0
         
-        if db:
+        if db is not None:
             # Користувачі
             total_users = safe_db_operation(
                 "Count users",
@@ -1103,7 +1104,7 @@ def health():
     })
 
 # ==============================================
-# ІНІЦІАЛІЗАЦІЯ ТА ЗАПУСК
+# ІНІЦІАЛІЗАЦІЯ ТА ЗАПУСК - ФІКС ТУТ!
 # ==============================================
 
 if __name__ == "__main__":
@@ -1112,7 +1113,10 @@ if __name__ == "__main__":
     
     port = int(os.environ.get("PORT", 10000))
     logger.info(f"📡 Server will run on port: {port}")
-    logger.info(f"💾 MongoDB: {'Connected' if db else 'Disconnected'}")
+    
+    # ФІКС: Замінити `if db` на `if db is not None`
+    logger.info(f"💾 MongoDB: {'Connected' if db is not None else 'Disconnected'}")
+    
     logger.info(f"🔗 TRON Wallet: {TRON_WALLET}")
     logger.info(f"🤖 Telegram Bot: @{TELEGRAM_BOT_USERNAME}")
     logger.info(f"🛒 Shop Products: {len(SHOP_PRODUCTS)} items (NEW PRICES: $0.7-0.9)")
